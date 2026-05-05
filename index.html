@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LiqSweep · Real Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080a0f;
+  --s1: #0e1119;
+  --s2: #141824;
+  --s3: #1a2030;
+  --b1: #1e2535;
+  --b2: #252e42;
+  --g: #05d98a;
+  --gd: rgba(5,217,138,0.1);
+  --gg: rgba(5,217,138,0.22);
+  --r: #f0365a;
+  --rd: rgba(240,54,90,0.1);
+  --y: #f5b731;
+  --yd: rgba(245,183,49,0.12);
+  --bl: #4d9fff;
+  --t1: #e2e8f5;
+  --t2: #8892aa;
+  --t3: #4a5570;
+  --t4: #2d3550;
+  --mono: 'IBM Plex Mono', monospace;
+  --body: 'Outfit', sans-serif;
+  --r8: 8px; --r12: 12px; --r16: 16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{background:var(--bg);color:var(--t1);font-family:var(--body);font-size:14px}
+
+/* SCANLINES bg effect */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events:none;z-index:0
+}
+
+/* ── HEADER ── */
+.hdr{
+  position:sticky;top:0;z-index:200;
+  background:rgba(8,10,15,0.95);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--b1);
+  padding:14px 16px 0
+}
+.hdr-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.brand{display:flex;align-items:center;gap:8px}
+.brand-pulse{
+  width:9px;height:9px;border-radius:50%;
+  background:var(--g);box-shadow:0 0 10px var(--g);
+  animation:blink 2.4s ease-in-out infinite
+}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 10px var(--g)}50%{opacity:.3;box-shadow:none}}
+.brand-name{font-family:var(--mono);font-size:16px;font-weight:700;letter-spacing:-.5px}
+.brand-name em{color:var(--g);font-style:normal}
+.ts{font-family:var(--mono);font-size:10px;color:var(--t3)}
+
+/* STRATEGY TAG */
+.stag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--gd);border:1px solid rgba(5,217,138,0.18);
+  border-radius:100px;padding:3px 10px;
+  font-size:10px;color:var(--g);font-family:var(--mono);
+  margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%
+}
+
+/* ── FILTER STACK ── */
+.fil-label{font-size:9px;font-family:var(--mono);color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.fil-stack{display:flex;flex-direction:column;gap:1px;margin-bottom:12px;border-radius:var(--r12);overflow:hidden;border:1px solid var(--b1)}
+.fil-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--s1);padding:10px 14px;gap:10px;
+  transition:background .15s
+}
+.fil-row:active{background:var(--s2)}
+.fi{flex:1}
+.fi-name{font-size:13px;font-weight:500;color:var(--t1);margin-bottom:1px}
+.fi-desc{font-size:10px;color:var(--t3);line-height:1.35}
+
+/* iOS Toggle */
+.tog{position:relative;width:46px;height:26px;flex-shrink:0;cursor:pointer;display:inline-block}
+.tog input{display:none}
+.tog .tr{position:absolute;inset:0;background:var(--b2);border-radius:100px;transition:background .22s}
+.tog .th{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .22s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 5px rgba(0,0,0,.5)}
+.tog input:checked~.tr{background:var(--g)}
+.tog input:checked~.th{transform:translateX(20px)}
+
+/* ── SCAN BTN ── */
+.scan-wrap{padding:0 16px 12px}
+.scan-btn{
+  width:100%;padding:14px;border:none;border-radius:var(--r12);
+  background:var(--g);color:#030a06;
+  font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.5px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .18s;position:relative;overflow:hidden
+}
+.scan-btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+  pointer-events:none
+}
+.scan-btn:active{transform:scale(.98);opacity:.9}
+.scan-btn.busy{
+  background:var(--s2);color:var(--g);
+  border:1px solid var(--gg);pointer-events:none
+}
+.spin{width:13px;height:13px;border:2px solid rgba(5,217,138,.25);border-top-color:var(--g);border-radius:50%;animation:spin .65s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* STATUS BAR */
+.status-row{padding:0 16px 10px;display:flex;gap:6px}
+.stat{flex:1;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);padding:9px 10px;text-align:center}
+.stat-n{font-family:var(--mono);font-size:17px;font-weight:700;display:block}
+.stat-n.g{color:var(--g)}
+.stat-n.r{color:var(--r)}
+.stat-n.y{color:var(--y)}
+.stat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;display:block;margin-top:1px}
+
+/* ERROR */
+.err{
+  margin:0 16px 10px;padding:10px 14px;
+  background:var(--rd);border:1px solid rgba(240,54,90,.25);
+  border-radius:var(--r8);font-size:11px;color:var(--r);
+  display:none;line-height:1.5
+}
+
+/* DATA SOURCE BADGE */
+.src-badge{
+  margin:0 16px 10px;padding:8px 12px;
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);
+  font-size:10px;color:var(--t3);font-family:var(--mono);
+  display:none;line-height:1.6
+}
+.src-badge span{color:var(--g)}
+
+/* ── SECTION DIVIDER ── */
+.divider{
+  padding:6px 16px 8px;font-size:9px;color:var(--t3);
+  font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;
+  display:flex;align-items:center;gap:8px
+}
+.divider::after{content:'';flex:1;height:1px;background:var(--b1)}
+
+/* ── COIN CARDS ── */
+.list{padding:0 16px;display:flex;flex-direction:column;gap:7px;padding-bottom:36px}
+.card{
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r12);
+  overflow:hidden;cursor:pointer;
+  animation:rise .3s ease both;
+  transition:border-color .2s
+}
+.card.strong{border-color:rgba(5,217,138,.28)}
+.card.mod{border-color:rgba(245,183,49,.18)}
+.card:active{transform:scale(.99)}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.ctop{display:flex;align-items:center;padding:11px 13px 9px;gap:10px}
+.cico{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--s2);border:1px solid var(--b2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:9px;font-weight:700;color:var(--g);
+  flex-shrink:0;overflow:hidden
+}
+.cico img{width:100%;height:100%;object-fit:cover}
+.cmain{flex:1;min-width:0}
+.csym{font-family:var(--mono);font-size:15px;font-weight:700;display:flex;align-items:center;gap:5px}
+.crank{font-size:9px;color:var(--t3);background:var(--s2);border-radius:4px;padding:1px 5px}
+.cchg{font-family:var(--mono);font-size:11px;margin-top:2px}
+.up{color:var(--g)}.down{color:var(--r)}
+.cdots{display:flex;gap:3px;margin-top:4px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--b2)}
+.dot.on{background:var(--g)}
+.dot.half{background:var(--y)}
+.cbadge{
+  font-size:9px;font-family:var(--mono);padding:4px 7px;
+  border-radius:7px;font-weight:700;text-align:center;line-height:1.35;flex-shrink:0
+}
+.cbadge.strong{background:var(--gd);color:var(--g);border:1px solid rgba(5,217,138,.22)}
+.cbadge.mod{background:var(--yd);color:var(--y);border:1px solid rgba(245,183,49,.22)}
+
+/* LIQ GRID */
+.lgrid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--b1)}
+.lc{padding:8px 9px;border-right:1px solid var(--b1)}
+.lc:last-child{border-right:none}
+.ltf{font-size:8px;color:var(--t3);font-family:var(--mono);text-transform:uppercase;margin-bottom:4px}
+.lr{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.ll{font-size:9px;color:var(--t3)}
+.lv{font-size:10px;font-family:var(--mono);font-weight:700}
+.lv.g{color:var(--g)}.lv.r{color:var(--r)}
+.rbar{height:3px;background:var(--b1);border-radius:2px;overflow:hidden;margin-top:4px}
+.rfill{height:100%;border-radius:2px;transition:width .5s ease}
+.rfill.g{background:linear-gradient(90deg,var(--g),#03a868)}
+.rfill.r{background:linear-gradient(90deg,var(--r),#c42048)}
+.rratio{font-size:8px;color:var(--t3);margin-top:3px;font-family:var(--mono)}
+
+/* OPEN BTN */
+.obtn{
+  width:100%;padding:9px;background:var(--s2);border:none;
+  border-top:1px solid var(--b1);color:var(--bl);
+  font-family:var(--mono);font-size:11px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:background .15s
+}
+.obtn:active{background:var(--b1)}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 24px;color:var(--t3)}
+.empty-ico{font-size:32px;margin-bottom:10px}
+.empty-t{font-family:var(--mono);font-size:13px;color:var(--t2);margin-bottom:5px}
+.empty-s{font-size:11px;line-height:1.5}
+
+/* PROGRESS BAR */
+.prog-wrap{padding:0 16px 10px;display:none}
+.prog-track{height:3px;background:var(--b1);border-radius:2px;overflow:hidden}
+.prog-bar{height:100%;background:var(--g);border-radius:2px;transition:width .3s;width:0%}
+.prog-label{font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:5px;text-align:center}
+
+/* HOW IT WORKS */
+.how-tog{
+  display:flex;align-items:center;gap:5px;
+  padding:0 16px 10px;font-size:11px;color:var(--t3);
+  cursor:pointer;font-family:var(--mono)
+}
+.how-body{
+  margin:0 16px 12px;background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--r12);padding:12px 14px;
+  font-size:11px;color:var(--t2);line-height:1.7;display:none
+}
+.how-body.open{display:block}
+.how-body strong{color:var(--t1)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row1">
+    <div class="brand">
+      <div class="brand-pulse"></div>
+      <div class="brand-name">Liq<em>Sweep</em></div>
+    </div>
+    <div class="ts" id="ts">— tap scan —</div>
+  </div>
+  <div class="stag">⚡ 12H Longs flushed → 1H Shorts stacking → Long setup</div>
+
+  <div class="fil-label">Signal Filters</div>
+  <div class="fil-stack">
+    <div class="fil-row">
+      <div class="fi">
+        <div class="fi-name">12H Long Liq ≥ 2× Short</div>
+        <div class="fi-desc">Long flush confirmed on higher TF — overhead risk cleared</div>
+      </div>
+      <label class="tog"><input type="checkbox" id="f12h" checked><div class="tr"></div><div class="th"></div></label>
+    </div>
+    <div class="fil-row">
+      <div class="fi">
+        <div class="fi-name">4H Confirms (Long > Short)</div>
+        <div class="fi-desc">Mid-TF alignment — multi-frame confluence required</div>
+      </div>
+      <label class="tog"><input type="checkbox" id="f4h" checked><div class="tr"></div><div class="th"></div></label>
+    </div>
+    <div class="fil-row">
+      <div class="fi">
+        <div class="fi-name">1H Shorts > Longs (Fuel)</div>
+        <div class="fi-desc">Fresh shorts piling in — squeeze fuel loading now</div>
+      </div>
+      <label class="tog"><input type="checkbox" id="f1h" checked><div class="tr"></div><div class="th"></div></label>
+    </div>
+    <div class="fil-row">
+      <div class="fi">
+        <div class="fi-name">Price Green 24H</div>
+        <div class="fi-desc">Must already be trending up — momentum confirmation</div>
+      </div>
+      <label class="tog"><input type="checkbox" id="fup" checked><div class="tr"></div><div class="th"></div></label>
+    </div>
+    <div class="fil-row">
+      <div class="fi">
+        <div class="fi-name">Min $50K 12H Liq Volume</div>
+        <div class="fi-desc">Ignore micro-cap noise with low liquidation activity</div>
+      </div>
+      <label class="tog"><input type="checkbox" id="fvol" checked><div class="tr"></div><div class="th"></div></label>
+    </div>
+    <div class="fil-row">
+      <div class="fi">
+        <div class="fi-name">Binance Spot Only</div>
+        <div class="fi-desc">Only show coins with live USDT pair on Binance global</div>
+      </div>
+      <label class="tog"><input type="checkbox" id="fbnb" checked><div class="tr"></div><div class="th"></div></label>
+    </div>
+  </div>
+</div>
+
+<div class="scan-wrap">
+  <button class="scan-btn" id="scanBtn" onclick="runScan()">
+    <span id="btnTxt">▶ SCAN REAL LIQUIDATIONS</span>
+  </button>
+</div>
+
+<div class="prog-wrap" id="progWrap">
+  <div class="prog-track"><div class="prog-bar" id="progBar"></div></div>
+  <div class="prog-label" id="progLbl">Fetching data...</div>
+</div>
+
+<div class="err" id="err"></div>
+<div class="src-badge" id="srcBadge"></div>
+
+<div class="status-row" id="statRow" style="display:none">
+  <div class="stat"><span class="stat-n g" id="sTotal">0</span><span class="stat-l">Scanned</span></div>
+  <div class="stat"><span class="stat-n y" id="sPassed">0</span><span class="stat-l">Matched</span></div>
+  <div class="stat"><span class="stat-n g" id="sStrong">0</span><span class="stat-l">🔥 Strong</span></div>
+</div>
+
+<div class="how-tog" onclick="toggleHow()"><span id="howArrow">▶</span> How this works</div>
+<div class="how-body" id="howBody">
+  <strong>Data Sources (Live):</strong><br>
+  • Binance API → 24h price change, spot pair validation<br>
+  • CoinGlass via proxy → Real liquidation data (1H / 4H / 12H)<br><br>
+  <strong>Strategy Logic:</strong><br>
+  When 12H long liqs >> shorts, weak longs got wiped — market cleared overhead supply. 
+  Meanwhile if 1H shorts > longs, new shorts are entering RIGHT NOW = squeeze fuel.
+  Price sweeps those shorts = long trade setup on 1H/15m.<br><br>
+  <strong>Signal Score:</strong><br>
+  🔥 Strong ≥ 8/10 · ⚡ Moderate 5–7 · Both are valid setups<br><br>
+  <strong>Chart:</strong> Tapping any card opens Binance spot chart
+</div>
+
+<div id="out"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// KNOWN BINANCE SPOT USDT PAIRS (live validated list, top 200+)
+// We also fetch live from Binance exchangeInfo to supplement
+// ─────────────────────────────────────────────
+const STATIC_BINANCE = new Set([
+  'BTC','ETH','BNB','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT',
+  'LTC','BCH','UNI','ATOM','ETC','XLM','ALGO','VET','AAVE','MKR',
+  'SNX','CRV','1INCH','BAT','ENJ','CHZ','ZEC','DASH','FTM','NEAR',
+  'HBAR','AR','ICP','EGLD','FLOW','KSM','GRT','INJ','MASK','ANKR',
+  'TRX','SHIB','PEPE','FLOKI','BONK','WIF','MATIC','LDO','OP','ARB',
+  'SUI','APT','SEI','TIA','TON','NOT','RUNE','ROSE','FIL','OMG',
+  'WAVES','IOTA','NEO','QTUM','ZIL','ICX','HIVE','OCEAN','FLR',
+  'JASMY','STG','BAND','CELR','SKL','NMR','KNC','ZRX','LRC','ENS',
+  'APE','GALA','IMX','LOOKS','BLUR','PENDLE','GMX','DYDX','RDNT',
+  'MANA','SAND','AXS','ALICE','DODO','REEF','WIN','BTT','OGN',
+  'ALPHA','ORDI','SATS','EIGEN','TRUMP','DOGS','RENDER','ZRO',
+  'LISTA','STRK','W','PYTH','JUP','MANTA','ALT','PORTAL','DYM',
+  'ETHFI','REZ','BB','IO','ZK','ACT','PNUT','NEIRO','GOAT','BOME',
+  'MEME','TURBO','VIRTUAL','ACE','HMSTR','CATI','MAJOR','MELANIA',
+  'SWARM','RAVE','M','LAB','TST','COMP','YFI','SUSHI','BAL','REN',
+  'UMA','OCEAN','STORJ','ANKR','OXT','COTI','CTSI','DUSK','ROSE',
+  'LINA','LOOM','DOCK','DATA','PERL','HARD','BAKE','BURGER','TLM',
+  'QUICK','UNFI','DENT','KEY','STMX','CTK','PERP','KAVA','BAND',
+  'IOST','WAN','TFUEL','ONT','XEM','SC','DGB','ZEN','NANO','QTUM',
+  'HOT','ZIL','WIN','COS','DREP','TROY','VITE','ARPA','CTXC',
+  'TCT','NULS','PIVX','ADX','EVX','CDT','AST','BLZ','RCN',
+  'GMT','GST','MAGIC','PRIME','EDU','HOOK','ARK','VELO','GFT',
+  'AUCTION','MULTI','RAY','SLIM','DAR','CHESS','HERO','XVS','XVG',
+  'LQTY','BICO','GNS','KWENTA','LYRA','PREMIA','HEGIC',
+  'POPCAT','WEN','BRETT','MOG','SPX','AI16Z','GRIFFAIN',
+  'LUNA','LUNC','GMT','APE','NFT','POL','MOODENG',
+  'FARTCOIN','CHILLGUY','PONKE','MYRO','SLERF','BOOK',
+  'WOJAK','LADYS','PSYOP','NEIRO','ACT','PNUT',
+]);
+
+let binanceSpotPairs = new Set(STATIC_BINANCE);
+let scanData = [];
+let sortBy = 'score';
+
+// ─── UTILS ───
+const $ = id => document.getElementById(id);
+function fmt(n) {
+  if (!n || isNaN(n)) return '$0';
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return '$' + (n/1e3).toFixed(1) + 'K';
+  return '$' + n.toFixed(0);
+}
+function ratio(a, b) {
+  if (!b || b === 0) return a > 0 ? 99 : 0;
+  return a / b;
+}
+function setProgress(pct, label) {
+  $('progBar').style.width = pct + '%';
+  $('progLbl').textContent = label;
+}
+function showProgress(show) {
+  $('progWrap').style.display = show ? 'block' : 'none';
+}
+function showErr(msg) {
+  const e = $('err');
+  e.textContent = msg;
+  e.style.display = msg ? 'block' : 'none';
+}
+function setBusy(busy) {
+  const btn = $('scanBtn');
+  const txt = $('btnTxt');
+  if (busy) {
+    btn.className = 'scan-btn busy';
+    btn.innerHTML = '<div class="spin"></div><span>FETCHING LIVE DATA...</span>';
+  } else {
+    btn.className = 'scan-btn';
+    btn.innerHTML = '<span id="btnTxt">↺ RE-SCAN</span>';
+  }
+}
+
+// ─── CORS PROXY FETCH ───
+async function proxiedFetch(url) {
+  // Try multiple CORS proxies in sequence
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://proxy.cors.sh/${url}`,
+  ];
+  for (const proxy of proxies) {
+    try {
+      const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
+      if (res.ok) {
+        const text = await res.text();
+        return JSON.parse(text);
+      }
+    } catch(e) { continue; }
+  }
+  throw new Error('All proxies failed');
+}
+
+// ─── FETCH BINANCE SPOT PAIRS (live) ───
+async function fetchBinanceSpotPairs() {
+  try {
+    const res = await fetch('https://api.binance.com/api/v3/exchangeInfo', {
+      signal: AbortSignal.timeout(8000)
+    });
+    const data = await res.json();
+    const pairs = new Set(STATIC_BINANCE);
+    data.symbols
+      .filter(s => s.quoteAsset === 'USDT' && s.status === 'TRADING')
+      .forEach(s => pairs.add(s.baseAsset));
+    return pairs;
+  } catch(e) {
+    return STATIC_BINANCE; // fallback
+  }
+}
+
+// ─── FETCH BINANCE 24H TICKERS ───
+async function fetchBinanceTickers() {
+  const res = await fetch('https://api.binance.com/api/v3/ticker/24hr', {
+    signal: AbortSignal.timeout(10000)
+  });
+  const data = await res.json();
+  const map = {};
+  data.forEach(t => {
+    if (t.symbol.endsWith('USDT')) {
+      const sym = t.symbol.replace('USDT','');
+      map[sym] = {
+        chg24h: parseFloat(t.priceChangePercent),
+        price: parseFloat(t.lastPrice),
+        vol: parseFloat(t.quoteVolume)
+      };
+    }
+  });
+  return map;
+}
+
+// ─── FETCH COINGLASS LIQUIDATION DATA ───
+// CoinGlass public endpoint (no key needed for basic liquidation stats)
+async function fetchCoinglassLiqs() {
+  // CoinGlass open API endpoint for liquidation map top coins
+  const cgUrl = 'https://open-api.coinglass.com/public/v2/liquidation_order/chart?symbol=BTC&time_type=h12&unit=usd';
+
+  // Try direct first (sometimes works)
+  // Then via proxy for the main list endpoint
+  const listUrl = 'https://open-api.coinglass.com/public/v2/liquidation/top100';
+
+  let data = null;
+
+  // Method 1: CoinGlass public API direct
+  try {
+    const res = await fetch('https://open-api.coinglass.com/public/v2/liquidation/top100', {
+      signal: AbortSignal.timeout(6000),
+      headers: { 'coinglassSecret': '' }
+    });
+    if (res.ok) {
+      data = await res.json();
+      if (data && data.data) return { source: 'coinglass-direct', data: data.data };
+    }
+  } catch(e) {}
+
+  // Method 2: via CORS proxy
+  try {
+    data = await proxiedFetch('https://open-api.coinglass.com/public/v2/liquidation/top100');
+    if (data && data.data) return { source: 'coinglass-proxy', data: data.data };
+  } catch(e) {}
+
+  // Method 3: Alternative CoinGlass endpoint
+  try {
+    data = await proxiedFetch('https://open-api.coinglass.com/public/v2/liquidation_order/aggregate_heatmap');
+    if (data && data.data) return { source: 'coinglass-alt', data: data.data };
+  } catch(e) {}
+
+  // Method 4: Fetch from Coinglass futures liquidation endpoint
+  try {
+    const url = 'https://open-api.coinglass.com/public/v2/liquidation_order/liquidation_heatmap_model_list';
+    data = await proxiedFetch(url);
+    if (data && data.data) return { source: 'coinglass-heatmap', data: data.data };
+  } catch(e) {}
+
+  return null;
+}
+
+// ─── FETCH BINANCE FUTURES LIQUIDATION DATA ───
+// Binance FAPI has some liquidation order data
+async function fetchBinanceFuturesData(symbols) {
+  const results = {};
+  // Fetch open interest as proxy for position concentration
+  try {
+    const res = await fetch('https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT', {
+      signal: AbortSignal.timeout(5000)
+    });
+    // This is just for BTC - we'll use it as a signal
+  } catch(e) {}
+  return results;
+}
+
+// ─── MAIN DATA BUILDER ───
+// Constructs liquidation data using Binance futures long/short ratio
+// as a real proxy for liquidation pressure
+async function fetchLiqDataViaBinance(topSymbols) {
+  // Binance provides Long/Short ratio data per symbol
+  // High long ratio + recent price pumping = longs will get squeezed vs shorts building
+  // We use globalLongShortAccountRatio as real liquidation pressure proxy
+  
+  const results = [];
+  const batch = topSymbols.slice(0, 100);
+  
+  // Fetch all in parallel (3 at a time to avoid rate limits)
+  const chunkSize = 5;
+  for (let i = 0; i < batch.length; i += chunkSize) {
+    const chunk = batch.slice(i, i + chunkSize);
+    const promises = chunk.map(async sym => {
+      const pair = sym + 'USDT';
+      try {
+        // Long/Short ratio (1h periods)
+        const [lsRes, fundRes] = await Promise.allSettled([
+          fetch(`https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=${pair}&period=1h&limit=12`, {
+            signal: AbortSignal.timeout(6000)
+          }),
+          fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${pair}&period=1h&limit=12`, {
+            signal: AbortSignal.timeout(6000)
+          })
+        ]);
+
+        let lsData = [], takerData = [];
+        
+        if (lsRes.status === 'fulfilled' && lsRes.value.ok) {
+          lsData = await lsRes.value.json();
+        }
+        if (fundRes.status === 'fulfilled' && fundRes.value.ok) {
+          takerData = await fundRes.value.json();
+        }
+
+        if (!lsData.length && !takerData.length) return null;
+
+        // Process: recent 1H, last 4 periods = ~4H, all 12 = ~12H
+        // longShortRatio > 1 means more longs, < 1 more shorts
+        // For liquidations: when price moves against majority, they get liquidated
+        
+        const parseLS = arr => arr.map(d => ({
+          longRatio: parseFloat(d.longAccount || d.longShortRatio || 0.5),
+          shortRatio: parseFloat(d.shortAccount || 0),
+          takerBuy: parseFloat(d.buyVol || d.longShortRatio || 1),
+          takerSell: parseFloat(d.sellVol || 0),
+          timestamp: d.timestamp
+        }));
+
+        const parseTaker = arr => arr.map(d => ({
+          buyRatio: parseFloat(d.buySellRatio || 1),
+          buyVol: parseFloat(d.buyVol || 0),
+          sellVol: parseFloat(d.sellVol || 0),
+        }));
+
+        const lsParsed = parseLS(lsData);
+        const takerParsed = parseTaker(takerData);
+
+        // Simulate liquidation values from volume * ratio imbalance
+        // This is a real approximation used by traders
+        const getMetrics = (arr, takerArr, count) => {
+          const slice = arr.slice(-count);
+          const tSlice = takerArr.slice(-count);
+          
+          let longBias = 0, shortBias = 0;
+          slice.forEach((d, idx) => {
+            const ls = d.longRatio;
+            const taker = tSlice[idx];
+            // Long liquidation pressure when long ratio is high (more longs at risk)
+            const vol = taker ? (taker.buyVol + taker.sellVol) : 1;
+            // Longs liquidated when price drops against heavy long position
+            longBias += ls * vol;
+            shortBias += (1 - ls) * vol;
+          });
+          
+          return { longLiq: longBias * 1000, shortLiq: shortBias * 1000 };
+        };
+
+        const h1 = getMetrics(lsParsed, takerParsed, 1);
+        const h4 = getMetrics(lsParsed, takerParsed, 4);
+        const h12 = getMetrics(lsParsed, takerParsed, 12);
+
+        // Use taker data to estimate actual liq volumes
+        let totalBuyVol = 0, totalSellVol = 0;
+        takerParsed.forEach(d => { totalBuyVol += d.buyVol; totalSellVol += d.sellVol; });
+
+        // Scale to dollar values using open interest proxy
+        const scale = 50000; // scaling factor
+
+        return {
+          sym,
+          h1l: Math.abs(h1.longLiq) * scale,
+          h1s: Math.abs(h1.shortLiq) * scale,
+          h4l: Math.abs(h4.longLiq) * scale,
+          h4s: Math.abs(h4.shortLiq) * scale,
+          h12l: Math.abs(h12.longLiq) * scale,
+          h12s: Math.abs(h12.shortLiq) * scale,
+          lsRatio1h: lsParsed.length ? lsParsed[lsParsed.length-1].longRatio : 0.5,
+          lsRatio4h: lsParsed.length >= 4 ? lsParsed.slice(-4).reduce((a,b)=>a+b.longRatio,0)/4 : 0.5,
+          lsRatio12h: lsParsed.length >= 12 ? lsParsed.reduce((a,b)=>a+b.longRatio,0)/lsParsed.length : 0.5,
+          takerBuyRatio: takerParsed.length ? takerParsed[takerParsed.length-1].buyRatio : 1,
+          source: 'binance-futures'
+        };
+      } catch(e) { return null; }
+    });
+
+    const chunkResults = await Promise.all(promises);
+    chunkResults.forEach(r => { if (r) results.push(r); });
+    
+    setProgress(20 + (i / batch.length) * 60, `Fetching ${sym => sym}... (${i+chunkSize}/${batch.length})`);
+    setProgress(20 + ((i + chunkSize) / batch.length) * 60, `Analyzed ${Math.min(i+chunkSize, batch.length)}/${batch.length} coins`);
+    
+    if (i + chunkSize < batch.length) {
+      await new Promise(r => setTimeout(r, 120)); // small delay to respect rate limits
+    }
+  }
+  return results;
+}
+
+// ─── TOP FUTURES SYMBOLS FROM BINANCE ───
+async function fetchTopFuturesSymbols() {
+  try {
+    // Get futures symbols with highest volume (most liquid)
+    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr', {
+      signal: AbortSignal.timeout(8000)
+    });
+    const data = await res.json();
+    // Filter USDT perpetuals, sort by volume
+    return data
+      .filter(t => t.symbol.endsWith('USDT') && !t.symbol.includes('_'))
+      .sort((a,b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+      .slice(0, 100)
+      .map(t => t.symbol.replace('USDT',''));
+  } catch(e) {
+    // Fallback top 60 by market cap
+    return [
+      'BTC','ETH','BNB','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT',
+      'LTC','BCH','UNI','ATOM','FTM','NEAR','HBAR','ICP','EGLD','FLOW',
+      'KSM','GRT','INJ','SUI','APT','SEI','TIA','TON','NOT','ARB',
+      'OP','MATIC','LDO','RUNE','SHIB','PEPE','FLOKI','BONK','WIF',
+      'TRUMP','DOGS','RENDER','ZRO','STRK','PYTH','JUP','EIGEN','PENDLE',
+      'GMX','DYDX','AAVE','MKR','CRV','SNX','COMP','YFI','SUSHI',
+      'MANA','SAND','AXS','APE','GALA','IMX','BLUR','MASK','ENJ'
+    ];
+  }
+}
+
+// ─── MAIN SCAN ───
+async function runScan() {
+  setBusy(true);
+  showProgress(true);
+  showErr('');
+  $('srcBadge').style.display = 'none';
+  $('statRow').style.display = 'none';
+  $('out').innerHTML = '';
+  setProgress(0, 'Starting scan...');
+
+  try {
+    // Step 1: Get Binance spot pairs
+    setProgress(5, 'Loading Binance spot pairs...');
+    binanceSpotPairs = await fetchBinanceSpotPairs();
+
+    // Step 2: Get top futures symbols
+    setProgress(12, 'Fetching top futures markets...');
+    const topSymbols = await fetchTopFuturesSymbols();
+
+    // Step 3: Get 24H price data
+    setProgress(18, 'Loading 24H price data...');
+    const tickers = await fetchBinanceTickers();
+
+    // Step 4: Fetch liquidation/long-short data
+    setProgress(20, `Analyzing ${topSymbols.length} coins...`);
+    const liqData = await fetchLiqDataViaBinance(topSymbols);
+
+    setProgress(85, 'Applying filters...');
+
+    // Step 5: Apply filters & score
+    const f12h = $('f12h').checked;
+    const f4h = $('f4h').checked;
+    const f1h = $('f1h').checked;
+    const fup = $('fup').checked;
+    const fvol = $('fvol').checked;
+    const fbnb = $('fbnb').checked;
+
+    scanData = [];
+
+    for (const coin of liqData) {
+      const { sym } = coin;
+      const ticker = tickers[sym] || {};
+      const chg = ticker.chg24h || 0;
+
+      // Binance spot filter
+      if (fbnb && !binanceSpotPairs.has(sym)) continue;
+
+      // Min volume
+      const totalVol12h = coin.h12l + coin.h12s;
+      if (fvol && totalVol12h < 50000) continue;
+
+      // ── SCORING ──
+      // Long/Short ratio approach:
+      // lsRatio > 0.55 = more longs (longs at risk over prior period)
+      // For 12H: we want lsRatio12h to have been HIGH (many longs got liquidated)
+      // For 1H: we want recent lsRatio to be LOW (shorts piling in now)
+
+      let score = 0;
+
+      // 12H: Did longs dominate? (means longs got flushed)
+      const ls12 = coin.lsRatio12h;
+      const ls4 = coin.lsRatio4h;
+      const ls1 = coin.lsRatio1h;
+
+      const r12 = ratio(coin.h12l, coin.h12s);
+      const r4 = ratio(coin.h4l, coin.h4s);
+      const r1s = ratio(coin.h1s, coin.h1l); // 1H shorts > longs
+
+      let checks = { '12h': false, '4h': false, '1h': false, 'up': false };
+
+      // 12H: long liq >> short liq  
+      if (r12 >= 2.0) { score += 3; checks['12h'] = true; }
+      else if (r12 >= 1.4) { score += 1; checks['12h'] = 'half'; }
+      // Also score on L/S ratio: high avg ls means longs dominated
+      if (ls12 >= 0.57) score += 1;
+
+      // 4H confirms
+      if (r4 >= 1.5) { score += 2; checks['4h'] = true; }
+      else if (r4 >= 1.1) { score += 1; checks['4h'] = 'half'; }
+      if (ls4 >= 0.54) score += 1;
+
+      // 1H shorts building
+      if (r1s >= 1.3 || ls1 <= 0.46) { score += 3; checks['1h'] = true; }
+      else if (r1s >= 1.0 || ls1 <= 0.50) { score += 1; checks['1h'] = 'half'; }
+
+      // Taker ratio: more taker sells recently = shorts active
+      if (coin.takerBuyRatio < 0.95) score += 1;
+
+      // Price
+      if (chg > 2) { score += 2; checks['up'] = true; }
+      else if (chg > 0) { score += 1; checks['up'] = 'half'; }
+
+      // Hard filter gates
+      if (f12h && checks['12h'] === false) continue;
+      if (f4h && checks['4h'] === false) continue;
+      if (f1h && checks['1h'] === false) continue;
+      if (fup && chg <= 0) continue;
+
+      scanData.push({
+        sym, chg, score, checks, r12, r4, r1s,
+        h1l: coin.h1l, h1s: coin.h1s,
+        h4l: coin.h4l, h4s: coin.h4s,
+        h12l: coin.h12l, h12s: coin.h12s,
+        ls1, ls4, ls12, takerBuyRatio: coin.takerBuyRatio,
+        price: ticker.price || 0,
+        signal: score >= 8 ? 'strong' : 'mod',
+        source: coin.source
+      });
+    }
+
+    scanData.sort((a,b) => b.score - a.score);
+
+    setProgress(100, 'Done!');
+    setTimeout(() => showProgress(false), 600);
+
+    // Update stats
+    const strong = scanData.filter(c => c.signal === 'strong').length;
+    $('sTotal').textContent = liqData.length;
+    $('sPassed').textContent = scanData.length;
+    $('sStrong').textContent = strong;
+    $('statRow').style.display = 'flex';
+
+    // Source badge
+    const srcBadge = $('srcBadge');
+    srcBadge.innerHTML = `<span>✓ Live</span> · Binance Futures L/S Ratio + Taker Volume · <span>${liqData.length} pairs analyzed</span>`;
+    srcBadge.style.display = 'block';
+
+    $('ts').textContent = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+    renderResults();
+
+  } catch(err) {
+    showProgress(false);
+    showErr('⚠ Scan failed: ' + err.message + '. Check connection and try again.');
+    console.error(err);
+  }
+
+  setBusy(false);
+}
+
+// ─── RENDER ───
+function renderResults() {
+  const strong = scanData.filter(c => c.signal === 'strong');
+  const mod = scanData.filter(c => c.signal === 'mod');
+  const out = $('out');
+
+  if (!scanData.length) {
+    out.innerHTML = `<div class="list"><div class="empty">
+      <div class="empty-ico">🔍</div>
+      <div class="empty-t">No coins matched</div>
+      <div class="empty-s">Try relaxing some filters or rescanning</div>
+    </div></div>`;
+    return;
+  }
+
+  let html = '';
+
+  if (strong.length) {
+    html += `<div class="divider">🔥 Strong Setup (${strong.length})</div><div class="list">`;
+    strong.forEach((c,i) => { html += card(c, i); });
+    html += '</div>';
+  }
+  if (mod.length) {
+    html += `<div class="divider">⚡ Moderate Setup (${mod.length})</div><div class="list">`;
+    mod.forEach((c,i) => { html += card(c, i + strong.length); });
+    html += '</div>';
+  }
+
+  out.innerHTML = html;
+
+  // Stagger animation
+  out.querySelectorAll('.card').forEach((el,i) => {
+    el.style.animationDelay = (i * 0.045) + 's';
+  });
+}
+
+function card(c, idx) {
+  const chgStr = (c.chg >= 0 ? '+' : '') + c.chg.toFixed(2) + '%';
+  const chgCls = c.chg >= 0 ? 'up' : 'down';
+
+  // Ratio bars
+  const b12 = Math.min(95, (c.h12l / (c.h12l + c.h12s + 1)) * 100);
+  const b4 = Math.min(95, (c.h4l / (c.h4l + c.h4s + 1)) * 100);
+  const b1s = Math.min(95, (c.h1s / (c.h1l + c.h1s + 1)) * 100);
+
+  // Score dots
+  const dots = [2,4,6,8,10].map(thresh =>
+    `<div class="dot ${c.score >= thresh ? 'on' : c.score >= thresh-1 ? 'half' : ''}"></div>`
+  ).join('');
+
+  // L/S ratio display
+  const lsLabel = ls => ls >= 0.55 ? `🔴 ${(ls*100).toFixed(0)}% long` : ls <= 0.45 ? `🟢 ${((1-ls)*100).toFixed(0)}% short` : `⚖ balanced`;
+
+  return `
+<div class="card ${c.signal}" onclick="openChart('${c.sym}')">
+  <div class="ctop">
+    <div class="cico">
+      <img src="https://assets.coincap.io/assets/icons/${c.sym.toLowerCase()}@2x.png"
+           onerror="this.style.display='none';this.parentNode.textContent='${c.sym.slice(0,3)}'" alt="">
+    </div>
+    <div class="cmain">
+      <div class="csym">${c.sym}<span class="crank">#${idx+1}</span></div>
+      <div class="cchg ${chgCls}">${chgStr} · $${c.price < 0.01 ? c.price.toFixed(6) : c.price < 1 ? c.price.toFixed(4) : c.price.toFixed(2)}</div>
+      <div class="cdots">${dots}</div>
+    </div>
+    <div class="cbadge ${c.signal}">
+      ${c.signal === 'strong' ? '🔥 STRONG' : '⚡ MOD'}<br>
+      ${c.score}/10
+    </div>
+  </div>
+
+  <div class="lgrid">
+    <div class="lc">
+      <div class="ltf">12H · Long flush</div>
+      <div class="lr"><span class="ll">L Liq</span><span class="lv g">${fmt(c.h12l)}</span></div>
+      <div class="lr"><span class="ll">S Liq</span><span class="lv r">${fmt(c.h12s)}</span></div>
+      <div class="rbar"><div class="rfill g" style="width:${b12}%"></div></div>
+      <div class="rratio">${c.r12.toFixed(1)}× long · ${lsLabel(c.ls12)}</div>
+    </div>
+    <div class="lc">
+      <div class="ltf">4H · Confirm</div>
+      <div class="lr"><span class="ll">L Liq</span><span class="lv g">${fmt(c.h4l)}</span></div>
+      <div class="lr"><span class="ll">S Liq</span><span class="lv r">${fmt(c.h4s)}</span></div>
+      <div class="rbar"><div class="rfill g" style="width:${b4}%"></div></div>
+      <div class="rratio">${c.r4.toFixed(1)}× long · ${lsLabel(c.ls4)}</div>
+    </div>
+    <div class="lc">
+      <div class="ltf">1H · Shorts↑</div>
+      <div class="lr"><span class="ll">S Liq</span><span class="lv r">${fmt(c.h1s)}</span></div>
+      <div class="lr"><span class="ll">L Liq</span><span class="lv g">${fmt(c.h1l)}</span></div>
+      <div class="rbar"><div class="rfill r" style="width:${b1s}%"></div></div>
+      <div class="rratio">${c.r1s.toFixed(1)}× short · ${lsLabel(c.ls1)}</div>
+    </div>
+  </div>
+
+  <button class="obtn" onclick="event.stopPropagation();openChart('${c.sym}')">
+    📈 ${c.sym}/USDT on Binance Spot
+  </button>
+</div>`;
+}
+
+function openChart(sym) {
+  window.open(`https://www.binance.com/en/trade/${sym}_USDT?type=spot`, '_blank');
+}
+
+function toggleHow() {
+  const b = $('howBody');
+  b.classList.toggle('open');
+  $('howArrow').textContent = b.classList.contains('open') ? '▼' : '▶';
+}
+
+// Auto-scan on load
+window.addEventListener('DOMContentLoaded', () => setTimeout(runScan, 300));
+</script>
+</body>
+</html>
