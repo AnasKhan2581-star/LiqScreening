@@ -3,972 +3,811 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>LiqSweep · Real Data</title>
+<title>PeakSweep · Pattern Scanner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #080a0f;
-  --s1: #0e1119;
-  --s2: #141824;
-  --s3: #1a2030;
-  --b1: #1e2535;
-  --b2: #252e42;
-  --g: #05d98a;
-  --gd: rgba(5,217,138,0.1);
-  --gg: rgba(5,217,138,0.22);
-  --r: #f0365a;
-  --rd: rgba(240,54,90,0.1);
-  --y: #f5b731;
-  --yd: rgba(245,183,49,0.12);
-  --bl: #4d9fff;
-  --t1: #e2e8f5;
-  --t2: #8892aa;
-  --t3: #4a5570;
-  --t4: #2d3550;
-  --mono: 'IBM Plex Mono', monospace;
-  --body: 'Outfit', sans-serif;
-  --r8: 8px; --r12: 12px; --r16: 16px;
+  --bg: #07080c;
+  --s1: #0d0f16;
+  --s2: #12151f;
+  --s3: #181c28;
+  --b1: #1c2133;
+  --b2: #232a40;
+  --v: #6b5ce7;
+  --vd: rgba(107,92,231,0.12);
+  --vg: rgba(107,92,231,0.25);
+  --vl: #8b7cf8;
+  --g: #00e5a0;
+  --gd: rgba(0,229,160,0.1);
+  --r: #ff4466;
+  --rd: rgba(255,68,102,0.1);
+  --y: #ffc142;
+  --yd: rgba(255,193,66,0.1);
+  --t1: #dde2f0;
+  --t2: #7a8299;
+  --t3: #3d4560;
+  --mono: 'JetBrains Mono', monospace;
+  --head: 'Syne', sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow-x:hidden}
-body{background:var(--bg);color:var(--t1);font-family:var(--body);font-size:14px}
+body{background:var(--bg);color:var(--t1);font-family:var(--head)}
 
-/* SCANLINES bg effect */
-body::before{
-  content:'';position:fixed;inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
-  pointer-events:none;z-index:0
+/* grain overlay */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size:200px;
 }
 
-/* ── HEADER ── */
+/* HEADER */
 .hdr{
-  position:sticky;top:0;z-index:200;
-  background:rgba(8,10,15,0.95);
-  backdrop-filter:blur(12px);
+  padding:20px 16px 0;
+  position:sticky;top:0;z-index:100;
+  background:rgba(7,8,12,0.96);
+  backdrop-filter:blur(16px);
   border-bottom:1px solid var(--b1);
-  padding:14px 16px 12px
 }
-.hdr-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.brand{display:flex;align-items:center;gap:8px}
-.brand-pulse{
-  width:9px;height:9px;border-radius:50%;
-  background:var(--g);box-shadow:0 0 10px var(--g);
-  animation:blink 2.4s ease-in-out infinite
+.hdr-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px}
+.brand{
+  font-family:var(--head);font-size:22px;font-weight:800;
+  letter-spacing:-1px;line-height:1
 }
-@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 10px var(--g)}50%{opacity:.3;box-shadow:none}}
-.brand-name{font-family:var(--mono);font-size:16px;font-weight:700;letter-spacing:-.5px}
-.brand-name em{color:var(--g);font-style:normal}
-.ts{font-family:var(--mono);font-size:10px;color:var(--t3)}
+.brand em{
+  color:transparent;font-style:normal;
+  background:linear-gradient(135deg,var(--vl),var(--g));
+  -webkit-background-clip:text;background-clip:text;
+}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--g);
+  box-shadow:0 0 8px var(--g);margin-top:8px;
+  animation:blink 2s infinite
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.sub{font-size:11px;color:var(--t3);font-family:var(--mono);margin-bottom:14px;letter-spacing:.3px}
 
-/* STRATEGY TAG */
-.stag{
-  display:inline-flex;align-items:center;gap:5px;
-  background:var(--gd);border:1px solid rgba(5,217,138,0.18);
-  border-radius:100px;padding:3px 10px;
-  font-size:10px;color:var(--g);font-family:var(--mono);
-  margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%
+/* PATTERN PREVIEW */
+.pat-preview{
+  margin-bottom:14px;
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:10px;padding:10px 14px;
+  display:flex;align-items:center;gap:12px
 }
+.pat-svg{flex-shrink:0}
+.pat-info{}
+.pat-name{font-size:12px;font-weight:700;color:var(--vl);letter-spacing:.5px;margin-bottom:2px}
+.pat-desc{font-size:10px;color:var(--t3);font-family:var(--mono);line-height:1.5}
 
-/* ── FILTER STACK ── */
-.fil-label{font-size:9px;font-family:var(--mono);color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.fil-stack{display:flex;flex-direction:column;gap:1px;margin-bottom:12px;border-radius:var(--r12);overflow:hidden;border:1px solid var(--b1)}
-.fil-row{
+/* TIMEFRAME PILLS */
+.tf-label{font-size:9px;font-family:var(--mono);color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.tf-pills{display:flex;gap:6px;margin-bottom:12px}
+.tf-pill{
+  flex:1;padding:9px 4px;text-align:center;
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:700;
+  color:var(--t3);cursor:pointer;transition:all .18s;
+}
+.tf-pill.active{
+  background:var(--vd);border-color:var(--vl);color:var(--vl);
+  box-shadow:0 0 12px rgba(107,92,231,0.2)
+}
+.tf-pill:active{transform:scale(.97)}
+
+/* SENSITIVITY ROW */
+.sens-row{
   display:flex;align-items:center;justify-content:space-between;
-  background:var(--s1);padding:10px 14px;gap:10px;
-  transition:background .15s
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:8px;padding:10px 14px;margin-bottom:10px;gap:10px
 }
-.fil-row:active{background:var(--s2)}
-.fi{flex:1}
-.fi-name{font-size:13px;font-weight:500;color:var(--t1);margin-bottom:1px}
-.fi-desc{font-size:10px;color:var(--t3);line-height:1.35}
+.sens-info{}
+.sens-name{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:1px}
+.sens-desc{font-size:10px;color:var(--t3);font-family:var(--mono)}
+.sens-btns{display:flex;gap:4px;flex-shrink:0}
+.sens-btn{
+  padding:5px 10px;border:1px solid var(--b2);background:var(--s2);
+  border-radius:6px;font-family:var(--mono);font-size:10px;font-weight:700;
+  color:var(--t3);cursor:pointer;transition:all .15s
+}
+.sens-btn.on{background:var(--vd);border-color:var(--vl);color:var(--vl)}
 
-/* iOS Toggle */
-.tog{position:relative;width:46px;height:26px;flex-shrink:0;cursor:pointer;display:inline-block}
-.tog input{display:none}
-.tog .tr{position:absolute;inset:0;background:var(--b2);border-radius:100px;transition:background .22s}
-.tog .th{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .22s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 5px rgba(0,0,0,.5)}
-.tog input:checked~.tr{background:var(--g)}
-.tog input:checked~.th{transform:translateX(20px)}
-
-/* ── SCAN BTN ── */
+/* SCAN BTN */
 .scan-wrap{padding:0 16px 12px}
 .scan-btn{
-  width:100%;padding:14px;border:none;border-radius:var(--r12);
-  background:var(--g);color:#030a06;
-  font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.5px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
-  transition:all .18s;position:relative;overflow:hidden
+  width:100%;padding:15px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,var(--v),var(--vl));
+  color:#fff;font-family:var(--head);font-size:14px;font-weight:700;
+  letter-spacing:.3px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .2s;position:relative;overflow:hidden
 }
-.scan-btn::after{
+.scan-btn::before{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
-  pointer-events:none
+  background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);
 }
-.scan-btn:active{transform:scale(.98);opacity:.9}
+.scan-btn:active{transform:scale(.98)}
 .scan-btn.busy{
-  background:var(--s2);color:var(--g);
-  border:1px solid var(--gg);pointer-events:none
+  background:var(--s2);color:var(--vl);
+  border:1px solid var(--vg);pointer-events:none
 }
-.spin{width:13px;height:13px;border:2px solid rgba(5,217,138,.25);border-top-color:var(--g);border-radius:50%;animation:spin .65s linear infinite}
+.spin{width:14px;height:14px;border:2px solid rgba(107,92,231,.3);border-top-color:var(--vl);border-radius:50%;animation:spin .65s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* STATUS BAR */
-.status-row{padding:0 16px 10px;display:flex;gap:6px}
-.stat{flex:1;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);padding:9px 10px;text-align:center}
-.stat-n{font-family:var(--mono);font-size:17px;font-weight:700;display:block}
+/* PROGRESS */
+.prog-wrap{padding:0 16px 10px;display:none}
+.prog-track{height:2px;background:var(--b1);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--v),var(--vl));border-radius:2px;transition:width .25s;width:0%}
+.prog-lbl{font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:6px;text-align:center}
+
+/* STATS */
+.stats{display:flex;gap:6px;padding:0 16px 12px}
+.stat{
+  flex:1;background:var(--s1);border:1px solid var(--b1);
+  border-radius:8px;padding:9px 8px;text-align:center
+}
+.stat-n{font-family:var(--mono);font-size:18px;font-weight:700;display:block}
+.stat-n.v{color:var(--vl)}
 .stat-n.g{color:var(--g)}
-.stat-n.r{color:var(--r)}
 .stat-n.y{color:var(--y)}
-.stat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;display:block;margin-top:1px}
+.stat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;margin-top:1px;display:block}
 
 /* ERROR */
-.err{
-  margin:0 16px 10px;padding:10px 14px;
-  background:var(--rd);border:1px solid rgba(240,54,90,.25);
-  border-radius:var(--r8);font-size:11px;color:var(--r);
-  display:none;line-height:1.5
-}
+.err{margin:0 16px 10px;padding:10px 14px;background:var(--rd);border:1px solid rgba(255,68,102,.25);border-radius:8px;font-size:11px;color:var(--r);display:none;font-family:var(--mono)}
 
-/* DATA SOURCE BADGE */
-.src-badge{
-  margin:0 16px 10px;padding:8px 12px;
-  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);
-  font-size:10px;color:var(--t3);font-family:var(--mono);
-  display:none;line-height:1.6
-}
-.src-badge span{color:var(--g)}
-
-/* ── SECTION DIVIDER ── */
-.divider{
-  padding:6px 16px 8px;font-size:9px;color:var(--t3);
-  font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;
+/* SECTION LABEL */
+.sec-lbl{
+  padding:4px 16px 8px;font-size:9px;color:var(--t3);
+  font-family:var(--mono);text-transform:uppercase;letter-spacing:1.2px;
   display:flex;align-items:center;gap:8px
 }
-.divider::after{content:'';flex:1;height:1px;background:var(--b1)}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--b1)}
 
-/* ── COIN CARDS ── */
-.list{padding:0 16px;display:flex;flex-direction:column;gap:7px;padding-bottom:36px}
+/* COIN CARD */
+.list{padding:0 16px;display:flex;flex-direction:column;gap:8px;padding-bottom:36px}
 .card{
-  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r12);
-  overflow:hidden;cursor:pointer;
-  animation:rise .3s ease both;
-  transition:border-color .2s
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:12px;overflow:hidden;cursor:pointer;
+  animation:rise .28s ease both;transition:border-color .2s
 }
-.card.strong{border-color:rgba(5,217,138,.28)}
-.card.mod{border-color:rgba(245,183,49,.18)}
 .card:active{transform:scale(.99)}
-@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card.strong{border-color:rgba(107,92,231,.4)}
+.card.mod{border-color:rgba(255,193,66,.2)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-.ctop{display:flex;align-items:center;padding:11px 13px 9px;gap:10px}
+/* CARD TOP */
+.ctop{display:flex;align-items:center;padding:11px 13px 10px;gap:10px}
 .cico{
-  width:38px;height:38px;border-radius:50%;
+  width:36px;height:36px;border-radius:50%;
   background:var(--s2);border:1px solid var(--b2);
   display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:9px;font-weight:700;color:var(--g);
+  font-family:var(--mono);font-size:9px;font-weight:700;color:var(--vl);
   flex-shrink:0;overflow:hidden
 }
 .cico img{width:100%;height:100%;object-fit:cover}
 .cmain{flex:1;min-width:0}
-.csym{font-family:var(--mono);font-size:15px;font-weight:700;display:flex;align-items:center;gap:5px}
-.crank{font-size:9px;color:var(--t3);background:var(--s2);border-radius:4px;padding:1px 5px}
-.cchg{font-family:var(--mono);font-size:11px;margin-top:2px}
-.up{color:var(--g)}.down{color:var(--r)}
-.cdots{display:flex;gap:3px;margin-top:4px}
-.dot{width:5px;height:5px;border-radius:50%;background:var(--b2)}
-.dot.on{background:var(--g)}
-.dot.half{background:var(--y)}
-.cbadge{
-  font-size:9px;font-family:var(--mono);padding:4px 7px;
-  border-radius:7px;font-weight:700;text-align:center;line-height:1.35;flex-shrink:0
-}
-.cbadge.strong{background:var(--gd);color:var(--g);border:1px solid rgba(5,217,138,.22)}
-.cbadge.mod{background:var(--yd);color:var(--y);border:1px solid rgba(245,183,49,.22)}
+.csym{font-size:15px;font-weight:800;display:flex;align-items:center;gap:5px;letter-spacing:-.3px}
+.crank{font-size:9px;color:var(--t3);background:var(--s2);border-radius:4px;padding:1px 5px;font-family:var(--mono);font-weight:400}
+.cmeta{font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:2px}
+.cmeta .up{color:var(--g)}.cmeta .dn{color:var(--r)}
 
-/* LIQ GRID */
-.lgrid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--b1)}
-.lc{padding:8px 9px;border-right:1px solid var(--b1)}
-.lc:last-child{border-right:none}
-.ltf{font-size:8px;color:var(--t3);font-family:var(--mono);text-transform:uppercase;margin-bottom:4px}
-.lr{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
-.ll{font-size:9px;color:var(--t3)}
-.lv{font-size:10px;font-family:var(--mono);font-weight:700}
-.lv.g{color:var(--g)}.lv.r{color:var(--r)}
-.rbar{height:3px;background:var(--b1);border-radius:2px;overflow:hidden;margin-top:4px}
-.rfill{height:100%;border-radius:2px;transition:width .5s ease}
-.rfill.g{background:linear-gradient(90deg,var(--g),#03a868)}
-.rfill.r{background:linear-gradient(90deg,var(--r),#c42048)}
-.rratio{font-size:8px;color:var(--t3);margin-top:3px;font-family:var(--mono)}
+/* MINI CHART */
+.mini-chart{
+  padding:0 13px 0;height:52px;position:relative;margin-bottom:6px
+}
+.mini-chart canvas{width:100%;height:100%;display:block}
+
+/* PATTERN METRICS */
+.pmets{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-top:1px solid var(--b1);
+}
+.pmet{padding:8px 10px;border-right:1px solid var(--b1)}
+.pmet:last-child{border-right:none}
+.pmet-l{font-size:8px;color:var(--t3);font-family:var(--mono);text-transform:uppercase;margin-bottom:3px}
+.pmet-v{font-size:11px;font-family:var(--mono);font-weight:700}
+.pmet-v.g{color:var(--g)}.pmet-v.r{color:var(--r)}.pmet-v.v{color:var(--vl)}.pmet-v.y{color:var(--y)}
+
+/* CONFIDENCE BAR */
+.conf-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 13px 10px;border-top:1px solid var(--b1)
+}
+.conf-label{font-size:9px;color:var(--t3);font-family:var(--mono);width:60px;flex-shrink:0}
+.conf-track{flex:1;height:4px;background:var(--b1);border-radius:2px;overflow:hidden}
+.conf-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--v),var(--vl));transition:width .4s}
+.conf-pct{font-size:10px;font-family:var(--mono);font-weight:700;color:var(--vl);width:32px;text-align:right;flex-shrink:0}
+.conf-badge{font-size:9px;font-family:var(--mono);font-weight:700;padding:3px 7px;border-radius:5px;flex-shrink:0}
+.conf-badge.s{background:var(--vd);color:var(--vl);border:1px solid rgba(107,92,231,.3)}
+.conf-badge.m{background:var(--yd);color:var(--y);border:1px solid rgba(255,193,66,.2)}
 
 /* OPEN BTN */
 .obtn{
   width:100%;padding:9px;background:var(--s2);border:none;
-  border-top:1px solid var(--b1);color:var(--bl);
+  border-top:1px solid var(--b1);
   font-family:var(--mono);font-size:11px;cursor:pointer;
+  color:#4d9fff;
   display:flex;align-items:center;justify-content:center;gap:5px;
   transition:background .15s
 }
 .obtn:active{background:var(--b1)}
 
 /* EMPTY */
-.empty{text-align:center;padding:40px 24px;color:var(--t3)}
-.empty-ico{font-size:32px;margin-bottom:10px}
-.empty-t{font-family:var(--mono);font-size:13px;color:var(--t2);margin-bottom:5px}
-.empty-s{font-size:11px;line-height:1.5}
-
-/* PROGRESS BAR */
-.prog-wrap{padding:0 16px 10px;display:none}
-.prog-track{height:3px;background:var(--b1);border-radius:2px;overflow:hidden}
-.prog-bar{height:100%;background:var(--g);border-radius:2px;transition:width .3s;width:0%}
-.prog-label{font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:5px;text-align:center}
-
-/* HOW IT WORKS */
-.how-tog{
-  display:flex;align-items:center;gap:5px;
-  padding:0 16px 10px;font-size:11px;color:var(--t3);
-  cursor:pointer;font-family:var(--mono)
-}
-.how-body{
-  margin:0 16px 12px;background:var(--s1);border:1px solid var(--b1);
-  border-radius:var(--r12);padding:12px 14px;
-  font-size:11px;color:var(--t2);line-height:1.7;display:none
-}
-.how-body.open{display:block}
-.how-body strong{color:var(--t1)}
+.empty{text-align:center;padding:48px 24px;color:var(--t3)}
+.empty-ico{font-size:36px;margin-bottom:12px}
+.empty-t{font-size:14px;font-weight:700;color:var(--t2);margin-bottom:6px}
+.empty-s{font-size:11px;font-family:var(--mono);line-height:1.6}
 </style>
 </head>
 <body>
 
 <div class="hdr">
-  <div class="hdr-row1">
-    <div class="brand">
-      <div class="brand-pulse"></div>
-      <div class="brand-name">Liq<em>Sweep</em></div>
+  <div class="hdr-top">
+    <div>
+      <div class="brand">Peak<em>Sweep</em></div>
+      <div class="sub">HH → Drop → HH → Pulling Back · Pattern Scanner</div>
     </div>
-    <div class="ts" id="ts">— tap scan —</div>
+    <div class="live-dot"></div>
   </div>
-  <div class="stag">⚡ 12H Longs flushed → 1H Shorts stacking → Long setup</div>
 
-  <div class="fil-label">Signal Filters</div>
-  <div class="fil-stack">
-    <div class="fil-row">
-      <div class="fi">
-        <div class="fi-name">12H Long Liq ≥ 1.4× Short</div>
-        <div class="fi-desc">Long flush confirmed on higher TF — overhead risk cleared</div>
-      </div>
-      <label class="tog"><input type="checkbox" id="f12h" checked><div class="tr"></div><div class="th"></div></label>
+  <!-- Pattern preview -->
+  <div class="pat-preview">
+    <svg class="pat-svg" width="80" height="40" viewBox="0 0 80 40">
+      <polyline points="0,38 10,28 16,32 24,16 30,22 40,8 46,18 58,2 68,14"
+        fill="none" stroke="#6b5ce7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- current drop arrow -->
+      <polyline points="58,2 68,14 76,26"
+        fill="none" stroke="#ff4466" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+        stroke-dasharray="4,2"/>
+      <circle cx="40" cy="8" r="2.5" fill="#6b5ce7"/>
+      <circle cx="58" cy="2" r="2.5" fill="#8b7cf8"/>
+      <circle cx="76" cy="26" r="2.5" fill="#ff4466"/>
+      <text x="36" y="7" fill="#6b5ce7" font-size="5" font-family="monospace">HH1</text>
+      <text x="54" y="1" fill="#8b7cf8" font-size="5" font-family="monospace">HH2</text>
+      <text x="62" y="32" fill="#ff4466" font-size="5" font-family="monospace">now↓</text>
+    </svg>
+    <div class="pat-info">
+      <div class="pat-name">DOUBLE PEAK PULLBACK</div>
+      <div class="pat-desc">HH1 → retrace → HH2 higher<br>→ currently dropping from HH2</div>
     </div>
-    <div class="fil-row">
-      <div class="fi">
-        <div class="fi-name">4H Confirms (Long > Short)</div>
-        <div class="fi-desc">Mid-TF alignment — multi-frame confluence required</div>
-      </div>
-      <label class="tog"><input type="checkbox" id="f4h" checked><div class="tr"></div><div class="th"></div></label>
+  </div>
+
+  <!-- Timeframe -->
+  <div class="tf-label">Timeframe · 500 candles</div>
+  <div class="tf-pills">
+    <div class="tf-pill" data-tf="1m" onclick="setTF(this)">1m</div>
+    <div class="tf-pill" data-tf="5m" onclick="setTF(this)">5m</div>
+    <div class="tf-pill active" data-tf="15m" onclick="setTF(this)">15m</div>
+    <div class="tf-pill" data-tf="1h" onclick="setTF(this)">1h</div>
+    <div class="tf-pill" data-tf="4h" onclick="setTF(this)">4h</div>
+  </div>
+
+  <!-- Sensitivity -->
+  <div class="sens-row">
+    <div class="sens-info">
+      <div class="sens-name">Pattern Sensitivity</div>
+      <div class="sens-desc">How strict peak detection is</div>
     </div>
-    <div class="fil-row">
-      <div class="fi">
-        <div class="fi-name">1H Shorts > Longs (Fuel)</div>
-        <div class="fi-desc">Fresh shorts piling in — squeeze fuel loading now</div>
-      </div>
-      <label class="tog"><input type="checkbox" id="f1h" checked><div class="tr"></div><div class="th"></div></label>
-    </div>
-    <div class="fil-row">
-      <div class="fi">
-        <div class="fi-name">15M Shorts > Longs (Entry)</div>
-        <div class="fi-desc">Intrabar shorts dominant — immediate entry confirmation</div>
-      </div>
-      <label class="tog"><input type="checkbox" id="f15m"><div class="tr"></div><div class="th"></div></label>
-    </div>
-    <div class="fil-row">
-      <div class="fi">
-        <div class="fi-name">Price Green 24H</div>
-        <div class="fi-desc">Must already be trending up — momentum confirmation</div>
-      </div>
-      <label class="tog"><input type="checkbox" id="fup" checked><div class="tr"></div><div class="th"></div></label>
-    </div>
-    <div class="fil-row">
-      <div class="fi">
-        <div class="fi-name">Min $50K 12H Liq Volume</div>
-        <div class="fi-desc">Ignore micro-cap noise with low liquidation activity</div>
-      </div>
-      <label class="tog"><input type="checkbox" id="fvol" checked><div class="tr"></div><div class="th"></div></label>
-    </div>
-    <div class="fil-row">
-      <div class="fi">
-        <div class="fi-name">Binance Spot Only</div>
-        <div class="fi-desc">Only show coins with live USDT pair on Binance global</div>
-      </div>
-      <label class="tog"><input type="checkbox" id="fbnb" checked><div class="tr"></div><div class="th"></div></label>
+    <div class="sens-btns">
+      <div class="sens-btn" data-s="loose" onclick="setSens(this)">Loose</div>
+      <div class="sens-btn on" data-s="normal" onclick="setSens(this)">Normal</div>
+      <div class="sens-btn" data-s="strict" onclick="setSens(this)">Strict</div>
     </div>
   </div>
 </div>
 
 <div class="scan-wrap">
   <button class="scan-btn" id="scanBtn" onclick="runScan()">
-    <span id="btnTxt">▶ SCAN REAL LIQUIDATIONS</span>
+    <span id="btnTxt">▶ SCAN PATTERN</span>
   </button>
 </div>
 
 <div class="prog-wrap" id="progWrap">
-  <div class="prog-track"><div class="prog-bar" id="progBar"></div></div>
-  <div class="prog-label" id="progLbl">Fetching data...</div>
+  <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+  <div class="prog-lbl" id="progLbl">Initializing...</div>
 </div>
 
 <div class="err" id="err"></div>
-<div class="src-badge" id="srcBadge"></div>
 
-<div class="status-row" id="statRow" style="display:none">
-  <div class="stat"><span class="stat-n g" id="sTotal">0</span><span class="stat-l">Scanned</span></div>
-  <div class="stat"><span class="stat-n y" id="sPassed">0</span><span class="stat-l">Matched</span></div>
-  <div class="stat"><span class="stat-n g" id="sStrong">0</span><span class="stat-l">🔥 Strong</span></div>
-</div>
-
-<div class="how-tog" onclick="toggleHow()"><span id="howArrow">▶</span> How this works</div>
-<div class="how-body" id="howBody">
-  <strong>Data Sources (Live):</strong><br>
-  • Binance API → 24h price change, spot pair validation<br>
-  • CoinGlass via proxy → Real liquidation data (1H / 4H / 12H)<br><br>
-  <strong>Strategy Logic:</strong><br>
-  When 12H long liqs >> shorts, weak longs got wiped — market cleared overhead supply. 
-  Meanwhile if 1H shorts > longs, new shorts are entering RIGHT NOW = squeeze fuel.
-  Price sweeps those shorts = long trade setup on 1H/15m.<br><br>
-  <strong>Signal Score:</strong><br>
-  🔥 Strong ≥ 8/10 · ⚡ Moderate 5–7 · Both are valid setups<br><br>
-  <strong>Chart:</strong> Tapping any card opens Binance spot chart
+<div class="stats" id="statRow" style="display:none">
+  <div class="stat"><span class="stat-n v" id="sScanned">0</span><span class="stat-l">Scanned</span></div>
+  <div class="stat"><span class="stat-n g" id="sMatched">0</span><span class="stat-l">Matched</span></div>
+  <div class="stat"><span class="stat-n y" id="sStrong">0</span><span class="stat-l">🔥 Strong</span></div>
 </div>
 
 <div id="out"></div>
 
 <script>
-// ─────────────────────────────────────────────
-// KNOWN BINANCE SPOT USDT PAIRS (live validated list, top 200+)
-// We also fetch live from Binance exchangeInfo to supplement
-// ─────────────────────────────────────────────
-const STATIC_BINANCE = new Set([
+// ── STATE ──
+let activeTF = '15m';
+let activeSens = 'normal';
+let results = [];
+
+// ── TOP 100 BINANCE SPOT COINS BY MARKET CAP ──
+// Fetched live then filtered against Binance spot pairs
+const TOP100 = [
   'BTC','ETH','BNB','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT',
-  'LTC','BCH','UNI','ATOM','ETC','XLM','ALGO','VET','AAVE','MKR',
-  'SNX','CRV','1INCH','BAT','ENJ','CHZ','ZEC','DASH','FTM','NEAR',
-  'HBAR','AR','ICP','EGLD','FLOW','KSM','GRT','INJ','MASK','ANKR',
-  'TRX','SHIB','PEPE','FLOKI','BONK','WIF','MATIC','LDO','OP','ARB',
-  'SUI','APT','SEI','TIA','TON','NOT','RUNE','ROSE','FIL','OMG',
-  'WAVES','IOTA','NEO','QTUM','ZIL','ICX','HIVE','OCEAN','FLR',
-  'JASMY','STG','BAND','CELR','SKL','NMR','KNC','ZRX','LRC','ENS',
-  'APE','GALA','IMX','LOOKS','BLUR','PENDLE','GMX','DYDX','RDNT',
-  'MANA','SAND','AXS','ALICE','DODO','REEF','WIN','BTT','OGN',
-  'ALPHA','ORDI','SATS','EIGEN','TRUMP','DOGS','RENDER','ZRO',
-  'LISTA','STRK','W','PYTH','JUP','MANTA','ALT','PORTAL','DYM',
-  'ETHFI','REZ','BB','IO','ZK','ACT','PNUT','NEIRO','GOAT','BOME',
-  'MEME','TURBO','VIRTUAL','ACE','HMSTR','CATI','MAJOR','MELANIA',
-  'SWARM','RAVE','M','LAB','TST','COMP','YFI','SUSHI','BAL','REN',
-  'UMA','OCEAN','STORJ','ANKR','OXT','COTI','CTSI','DUSK','ROSE',
-  'LINA','LOOM','DOCK','DATA','PERL','HARD','BAKE','BURGER','TLM',
-  'QUICK','UNFI','DENT','KEY','STMX','CTK','PERP','KAVA','BAND',
-  'IOST','WAN','TFUEL','ONT','XEM','SC','DGB','ZEN','NANO','QTUM',
-  'HOT','ZIL','WIN','COS','DREP','TROY','VITE','ARPA','CTXC',
-  'TCT','NULS','PIVX','ADX','EVX','CDT','AST','BLZ','RCN',
-  'GMT','GST','MAGIC','PRIME','EDU','HOOK','ARK','VELO','GFT',
-  'AUCTION','MULTI','RAY','SLIM','DAR','CHESS','HERO','XVS','XVG',
-  'LQTY','BICO','GNS','KWENTA','LYRA','PREMIA','HEGIC',
-  'POPCAT','WEN','BRETT','MOG','SPX','AI16Z','GRIFFAIN',
-  'LUNA','LUNC','GMT','APE','NFT','POL','MOODENG',
-  'FARTCOIN','CHILLGUY','PONKE','MYRO','SLERF','BOOK',
-  'WOJAK','LADYS','PSYOP','NEIRO','ACT','PNUT',
-]);
+  'TON','TRX','SHIB','SUI','LTC','HBAR','BCH','NEAR','PEPE','APT',
+  'UNI','ICP','ETC','ARB','POL','RENDER','KAS','OP','BONK','VET',
+  'FIL','ATOM','AAVE','MKR','WIF','FTM','INJ','GRT','IMX','RUNE',
+  'SEI','FLOKI','AR','JASMY','LDO','STX','MANA','SAND','WLD','NOT',
+  'ENS','GALA','AXS','BLUR','CRV','SNX','COMP','ZIL','ONE','ROSE',
+  'APE','ZEC','DASH','MASK','PENDLE','DYDX','GMX','YFI','SUSHI',
+  'ANKR','CHZ','BAT','ZRX','OCEAN','KNC','LRC','SKL','CELR','REN',
+  'BAND','STORJ','NMR','GNO','ENJ','FLOW','HIVE','FLR','KAVA','QTUM',
+  'MINA','ONT','ICX','ZEN','ELF','IOTA','SC','DGB','XEM','NANO'
+];
 
-let binanceSpotPairs = new Set(STATIC_BINANCE);
-let scanData = [];
-let sortBy = 'score';
-
-// ─── UTILS ───
 const $ = id => document.getElementById(id);
-function fmt(n) {
-  if (!n || isNaN(n)) return '$0';
-  if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
-  if (n >= 1e3) return '$' + (n/1e3).toFixed(1) + 'K';
-  return '$' + n.toFixed(0);
+
+function setTF(el) {
+  document.querySelectorAll('.tf-pill').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  activeTF = el.dataset.tf;
 }
-function ratio(a, b) {
-  if (!b || b === 0) return a > 0 ? 99 : 0;
-  return a / b;
+
+function setSens(el) {
+  document.querySelectorAll('.sens-btn').forEach(e => e.classList.remove('on'));
+  el.classList.add('on');
+  activeSens = el.dataset.s;
 }
-function setProgress(pct, label) {
-  $('progBar').style.width = pct + '%';
-  $('progLbl').textContent = label;
+
+function setProgress(pct, lbl) {
+  $('progFill').style.width = pct + '%';
+  $('progLbl').textContent = lbl;
 }
-function showProgress(show) {
-  $('progWrap').style.display = show ? 'block' : 'none';
-}
+
 function showErr(msg) {
   const e = $('err');
   e.textContent = msg;
   e.style.display = msg ? 'block' : 'none';
 }
-function setBusy(busy) {
-  const btn = $('scanBtn');
-  const txt = $('btnTxt');
-  if (busy) {
-    btn.className = 'scan-btn busy';
-    btn.innerHTML = '<div class="spin"></div><span>FETCHING LIVE DATA...</span>';
-  } else {
-    btn.className = 'scan-btn';
-    btn.innerHTML = '<span id="btnTxt">↺ RE-SCAN</span>';
-  }
+
+// ── ABORT CONTROLLER HELPER ──
+function timeout(ms) {
+  const c = new AbortController();
+  setTimeout(() => c.abort(), ms);
+  return c;
 }
 
-// ─── CORS PROXY FETCH ───
-async function proxiedFetch(url) {
-  // Try multiple CORS proxies in sequence
-  const proxies = [
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    `https://proxy.cors.sh/${url}`,
-  ];
-  for (const proxy of proxies) {
-    try {
-      const res = await fetch(proxy, { signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 8000); return c.signal; })() });
-      if (res.ok) {
-        const text = await res.text();
-        return JSON.parse(text);
-      }
-    } catch(e) { continue; }
-  }
-  throw new Error('All proxies failed');
+// ── FETCH BINANCE KLINES ──
+async function fetchKlines(sym, tf, limit = 500) {
+  const c = timeout(10000);
+  const res = await fetch(
+    `https://api.binance.com/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=${limit}`,
+    { signal: c.signal }
+  );
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const raw = await res.json();
+  // [openTime, open, high, low, close, volume, ...]
+  return raw.map(k => ({
+    t: k[0],
+    o: parseFloat(k[1]),
+    h: parseFloat(k[2]),
+    l: parseFloat(k[3]),
+    c: parseFloat(k[4]),
+    v: parseFloat(k[5]),
+  }));
 }
 
-// ─── FETCH BINANCE SPOT PAIRS (live) ───
-async function fetchBinanceSpotPairs() {
+// ── FETCH LIVE TOP 300 BINANCE SPOT LIST ──
+async function fetchBinanceTop100() {
   try {
-    const res = await fetch('https://api.binance.com/api/v3/exchangeInfo', {
-      signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 8000); return c.signal; })()
-    });
+    const c = timeout(10000);
+    const res = await fetch('https://api.binance.com/api/v3/ticker/24hr', { signal: c.signal });
     const data = await res.json();
-    const pairs = new Set(STATIC_BINANCE);
-    data.symbols
-      .filter(s => s.quoteAsset === 'USDT' && s.status === 'TRADING')
-      .forEach(s => pairs.add(s.baseAsset));
-    return pairs;
-  } catch(e) {
-    return STATIC_BINANCE; // fallback
-  }
-}
-
-// ─── FETCH BINANCE 24H TICKERS ───
-async function fetchBinanceTickers() {
-  const res = await fetch('https://api.binance.com/api/v3/ticker/24hr', {
-    signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 10000); return c.signal; })()
-  });
-  const data = await res.json();
-  const map = {};
-  data.forEach(t => {
-    if (t.symbol.endsWith('USDT')) {
-      const sym = t.symbol.replace('USDT','');
-      map[sym] = {
-        chg24h: parseFloat(t.priceChangePercent),
-        price: parseFloat(t.lastPrice),
-        vol: parseFloat(t.quoteVolume)
-      };
-    }
-  });
-  return map;
-}
-
-// ─── FETCH COINGLASS LIQUIDATION DATA ───
-// CoinGlass public endpoint (no key needed for basic liquidation stats)
-async function fetchCoinglassLiqs() {
-  // CoinGlass open API endpoint for liquidation map top coins
-  const cgUrl = 'https://open-api.coinglass.com/public/v2/liquidation_order/chart?symbol=BTC&time_type=h12&unit=usd';
-
-  // Try direct first (sometimes works)
-  // Then via proxy for the main list endpoint
-  const listUrl = 'https://open-api.coinglass.com/public/v2/liquidation/top100';
-
-  let data = null;
-
-  // Method 1: CoinGlass public API direct
-  try {
-    const res = await fetch('https://open-api.coinglass.com/public/v2/liquidation/top100', {
-      signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 6000); return c.signal; })(),
-      headers: { 'coinglassSecret': '' }
-    });
-    if (res.ok) {
-      data = await res.json();
-      if (data && data.data) return { source: 'coinglass-direct', data: data.data };
-    }
-  } catch(e) {}
-
-  // Method 2: via CORS proxy
-  try {
-    data = await proxiedFetch('https://open-api.coinglass.com/public/v2/liquidation/top100');
-    if (data && data.data) return { source: 'coinglass-proxy', data: data.data };
-  } catch(e) {}
-
-  // Method 3: Alternative CoinGlass endpoint
-  try {
-    data = await proxiedFetch('https://open-api.coinglass.com/public/v2/liquidation_order/aggregate_heatmap');
-    if (data && data.data) return { source: 'coinglass-alt', data: data.data };
-  } catch(e) {}
-
-  // Method 4: Fetch from Coinglass futures liquidation endpoint
-  try {
-    const url = 'https://open-api.coinglass.com/public/v2/liquidation_order/liquidation_heatmap_model_list';
-    data = await proxiedFetch(url);
-    if (data && data.data) return { source: 'coinglass-heatmap', data: data.data };
-  } catch(e) {}
-
-  return null;
-}
-
-// ─── FETCH BINANCE FUTURES LIQUIDATION DATA ───
-// Binance FAPI has some liquidation order data
-async function fetchBinanceFuturesData(symbols) {
-  const results = {};
-  // Fetch open interest as proxy for position concentration
-  try {
-    const res = await fetch('https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT', {
-      signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 5000); return c.signal; })()
-    });
-    // This is just for BTC - we'll use it as a signal
-  } catch(e) {}
-  return results;
-}
-
-// ─── MAIN DATA BUILDER ───
-// Constructs liquidation data using Binance futures long/short ratio
-// as a real proxy for liquidation pressure
-async function fetchLiqDataViaBinance(topSymbols) {
-  // Binance provides Long/Short ratio data per symbol
-  // High long ratio + recent price pumping = longs will get squeezed vs shorts building
-  // We use globalLongShortAccountRatio as real liquidation pressure proxy
-  
-  const results = [];
-  const batch = topSymbols.slice(0, 100);
-  
-  // Fetch all in parallel (3 at a time to avoid rate limits)
-  const chunkSize = 5;
-  for (let i = 0; i < batch.length; i += chunkSize) {
-    const chunk = batch.slice(i, i + chunkSize);
-    const promises = chunk.map(async sym => {
-      const pair = sym + 'USDT';
-      try {
-        // Long/Short ratio (1h periods)
-        const [lsRes, fundRes, taker15mRes] = await Promise.allSettled([
-          fetch(`https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=${pair}&period=1h&limit=12`, {
-            signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 6000); return c.signal; })()
-          }),
-          fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${pair}&period=1h&limit=12`, {
-            signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 6000); return c.signal; })()
-          }),
-          fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${pair}&period=15m&limit=4`, {
-            signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 6000); return c.signal; })()
-          })
-        ]);
-
-        let lsData = [], takerData = [], taker15mData = [];
-        if (lsRes.status === 'fulfilled' && lsRes.value.ok) lsData = await lsRes.value.json();
-        if (fundRes.status === 'fulfilled' && fundRes.value.ok) takerData = await fundRes.value.json();
-        if (taker15mRes.status === 'fulfilled' && taker15mRes.value.ok) taker15mData = await taker15mRes.value.json();
-
-        if (!lsData.length && !takerData.length) return null;
-
-        // Process: recent 1H, last 4 periods = ~4H, all 12 = ~12H
-        // longShortRatio > 1 means more longs, < 1 more shorts
-        // For liquidations: when price moves against majority, they get liquidated
-        
-        // Binance globalLongShortAccountRatio returns:
-        // { longAccount: "0.5823", shortAccount: "0.4177", longShortRatio: "1.3934", timestamp: ... }
-        const parseLS = arr => arr.map(d => ({
-          longAcc: parseFloat(d.longAccount) || 0.5,   // fraction of accounts that are long (0.0–1.0)
-          shortAcc: parseFloat(d.shortAccount) || 0.5,
-          timestamp: d.timestamp
-        }));
-
-        // Binance takerlongshortRatio returns:
-        // { buySellRatio: "1.0234", buyVol: "12345.67", sellVol: "12067.89", timestamp: ... }
-        const parseTaker = arr => arr.map(d => ({
-          buySellRatio: parseFloat(d.buySellRatio) || 1.0,  // >1 = more buy takers, <1 = more sell takers
-          buyVol: parseFloat(d.buyVol) || 0,
-          sellVol: parseFloat(d.sellVol) || 0,
-        }));
-
-        const lsParsed = parseLS(lsData);
-        const takerParsed = parseTaker(takerData);
-
-        if (!lsParsed.length) return null;
-
-        // Correctly compute average longAccount over each window
-        const avg = (arr, key, n) => {
-          const sl = arr.slice(-n);
-          if (!sl.length) return 0.5;
-          return sl.reduce((s, d) => s + d[key], 0) / sl.length;
-        };
-
-        // Dollar volume proxies: taker buyVol + sellVol = total traded value per hour
-        // Long-biased liq proxy = longAcc * totalVol (longs at risk = long ratio × volume)
-        const getVolMetrics = (lsArr, tkArr, n) => {
-          const ls = lsArr.slice(-n);
-          const tk = tkArr.slice(-n);
-          let lv = 0, sv = 0;
-          ls.forEach((d, i) => {
-            const vol = tk[i] ? (tk[i].buyVol + tk[i].sellVol) : 1000;
-            lv += d.longAcc * vol;
-            sv += d.shortAcc * vol;
-          });
-          return { lv, sv };
-        };
-
-        const m1  = getVolMetrics(lsParsed, takerParsed, 1);
-        const m4  = getVolMetrics(lsParsed, takerParsed, 4);
-        const m12 = getVolMetrics(lsParsed, takerParsed, 12);
-
-        // Most recent taker buySellRatio (last 1H candle)
-        const lastTaker = takerParsed.length ? takerParsed[takerParsed.length - 1].buySellRatio : 1.0;
-
-        // 15m: avg buySellRatio over last 4 candles (1 hour of 15m data)
-        const taker15mParsed = taker15mData.map(d => parseFloat(d.buySellRatio) || 1);
-        const taker15mAvg = taker15mParsed.length
-          ? taker15mParsed.reduce((a,b) => a+b, 0) / taker15mParsed.length
-          : 1.0;
-
-        return {
-          sym,
-          h1l: m1.lv,  h1s: m1.sv,
-          h4l: m4.lv,  h4s: m4.sv,
-          h12l: m12.lv, h12s: m12.sv,
-          lsRatio1h:  avg(lsParsed, 'longAcc', 1),
-          lsRatio4h:  avg(lsParsed, 'longAcc', 4),
-          lsRatio12h: avg(lsParsed, 'longAcc', 12),
-          takerBuyRatio: lastTaker,
-          taker15mRatio: taker15mAvg,  // <1 = 15m sell-taker dominant = shorts active
-          source: 'binance-futures'
-        };
-      } catch(e) { return null; }
-    });
-
-    const chunkResults = await Promise.all(promises);
-    chunkResults.forEach(r => { if (r) results.push(r); });
-    
-    setProgress(20 + ((i + chunkSize) / batch.length) * 60, `Analyzed ${Math.min(i+chunkSize, batch.length)}/${batch.length} coins...`);
-    
-    if (i + chunkSize < batch.length) {
-      await new Promise(r => setTimeout(r, 120)); // small delay to respect rate limits
-    }
-  }
-  return results;
-}
-
-// ─── TOP FUTURES SYMBOLS FROM BINANCE ───
-async function fetchTopFuturesSymbols() {
-  try {
-    // Get futures symbols with highest volume (most liquid)
-    const res = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr', {
-      signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 8000); return c.signal; })()
-    });
-    const data = await res.json();
-    // Filter USDT perpetuals, sort by volume
     return data
       .filter(t => t.symbol.endsWith('USDT') && !t.symbol.includes('_'))
       .sort((a,b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-      .slice(0, 250)
-      .map(t => t.symbol.replace('USDT',''));
+      .slice(0, 300)
+      .map(t => ({ sym: t.symbol.replace('USDT',''), chg: parseFloat(t.priceChangePercent), price: parseFloat(t.lastPrice) }));
   } catch(e) {
-    // Fallback top 120 by market cap (used if Binance FAPI is down)
-    return [
-      'BTC','ETH','BNB','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT',
-      'LTC','BCH','UNI','ATOM','FTM','NEAR','HBAR','ICP','EGLD','FLOW',
-      'KSM','GRT','INJ','SUI','APT','SEI','TIA','TON','NOT','ARB',
-      'OP','MATIC','LDO','RUNE','SHIB','PEPE','FLOKI','BONK','WIF',
-      'TRUMP','DOGS','RENDER','ZRO','STRK','PYTH','JUP','EIGEN','PENDLE',
-      'GMX','DYDX','AAVE','MKR','CRV','SNX','COMP','YFI','SUSHI',
-      'MANA','SAND','AXS','APE','GALA','IMX','BLUR','MASK','ENJ',
-      'HIVE','ZEC','DASH','OCEAN','FLR','JASMY','STG','BAND','CELR',
-      'SKL','NMR','KNC','ZRX','LRC','ENS','LOOKS','RDNT','BICO',
-      'ACT','PNUT','NEIRO','GOAT','BOME','MEME','TURBO','VIRTUAL',
-      'HMSTR','CATI','MAJOR','MELANIA','VET','CHZ','BAT','ETC','XLM',
-      'ALGO','ROSE','ZEN','KAVA','IOTA','ONT','ICX','QTUM','ZIL',
-      'WIN','BTT','TRX','ANKR','OGN','ALPHA','ORDI','SATS','ACE',
-    ];
+    return TOP100.map(sym => ({ sym, chg: 0, price: 0 }));
   }
 }
 
-// ─── MAIN SCAN ───
-async function runScan() {
-  setBusy(true);
-  showProgress(true);
-  showErr('');
-  $('srcBadge').style.display = 'none';
-  $('statRow').style.display = 'none';
-  $('out').innerHTML = '';
-  setProgress(0, 'Starting scan...');
+// ══════════════════════════════════════════════
+// ── PATTERN DETECTION ENGINE ──
+// Pattern: Higher High 1 → retrace → Higher High 2 → currently dropping
+// ══════════════════════════════════════════════
 
-  try {
-    // Step 1: Get Binance spot pairs
-    setProgress(5, 'Loading Binance spot pairs...');
-    binanceSpotPairs = await fetchBinanceSpotPairs();
+function detectPattern(candles, sensitivity) {
+  // Sensitivity config
+  const cfg = {
+    loose:  { peakWindow: 5,  minRetraceRatio: 0.15, minHHRatio: 1.005, dropFromPeak: 0.008, minSwingAmp: 0.03 },
+    normal: { peakWindow: 8,  minRetraceRatio: 0.25, minHHRatio: 1.01,  dropFromPeak: 0.012, minSwingAmp: 0.05 },
+    strict: { peakWindow: 12, minRetraceRatio: 0.35, minHHRatio: 1.02,  dropFromPeak: 0.02,  minSwingAmp: 0.08 },
+  }[sensitivity];
 
-    // Step 2: Get top futures symbols
-    setProgress(12, 'Fetching top futures markets...');
-    const topSymbols = await fetchTopFuturesSymbols();
+  const closes = candles.map(c => c.c);
+  const highs  = candles.map(c => c.h);
+  const lows   = candles.map(c => c.l);
+  const n      = candles.length;
 
-    // Step 3: Get 24H price data
-    setProgress(18, 'Loading 24H price data...');
-    const tickers = await fetchBinanceTickers();
+  // ── STEP 1: Find significant peaks using local maxima ──
+  // A peak is a high that is the highest point in a window of ±peakWindow candles
+  function findPeaks() {
+    const peaks = [];
+    const w = cfg.peakWindow;
+    for (let i = w; i < n - w; i++) {
+      let isPeak = true;
+      for (let j = i - w; j <= i + w; j++) {
+        if (j !== i && highs[j] >= highs[i]) { isPeak = false; break; }
+      }
+      if (isPeak) peaks.push({ idx: i, price: highs[i] });
+    }
+    return peaks;
+  }
 
-    // Step 4: Fetch liquidation/long-short data
-    setProgress(20, `Analyzing ${topSymbols.length} coins...`);
-    const liqData = await fetchLiqDataViaBinance(topSymbols);
+  // ── STEP 2: Find significant troughs ──
+  function findTroughs() {
+    const troughs = [];
+    const w = Math.max(3, Math.floor(cfg.peakWindow * 0.6));
+    for (let i = w; i < n - w; i++) {
+      let isTrough = true;
+      for (let j = i - w; j <= i + w; j++) {
+        if (j !== i && lows[j] <= lows[i]) { isTrough = false; break; }
+      }
+      if (isTrough) troughs.push({ idx: i, price: lows[i] });
+    }
+    return troughs;
+  }
 
-    setProgress(85, 'Applying filters...');
+  const peaks   = findPeaks();
+  const troughs = findTroughs();
 
-    // Step 5: Apply filters & score
-    const f12h = $('f12h').checked;
-    const f4h  = $('f4h').checked;
-    const f1h  = $('f1h').checked;
-    const f15m = $('f15m').checked;
-    const fup  = $('fup').checked;
-    const fvol = $('fvol').checked;
-    const fbnb = $('fbnb').checked;
+  if (peaks.length < 2) return null;
 
-    scanData = [];
+  // ── STEP 3: Find the best HH1 → trough → HH2 sequence ──
+  // We scan backward from end to find the most recent valid pattern
+  let bestMatch = null;
+  let bestScore = 0;
 
-    for (const coin of liqData) {
-      const { sym } = coin;
-      const ticker = tickers[sym] || {};
-      const chg = ticker.chg24h || 0;
+  for (let pi2 = peaks.length - 1; pi2 >= 1; pi2--) {
+    const peak2 = peaks[pi2];
+    // Only consider peaks that are NOT the very last candle (need drop after)
+    if (peak2.idx >= n - 3) continue;
 
-      // Binance spot filter
-      if (fbnb && !binanceSpotPairs.has(sym)) continue;
+    for (let pi1 = pi2 - 1; pi1 >= 0; pi1--) {
+      const peak1 = peaks[pi1];
 
-      // Min volume
-      const totalVol12h = coin.h12l + coin.h12s;
-      if (fvol && totalVol12h < 50000) continue;
+      // HH2 must be HIGHER than HH1
+      if (peak2.price < peak1.price * cfg.minHHRatio) continue;
 
-      // ── REAL DATA SCORING ──
-      // Binance globalLongShortAccountRatio ranges: 0.44 – 0.62 in practice
-      // Strategy: 12H avg longAcc was HIGH (longs dominated = got flushed)
-      //           4H avg longAcc DECLINING vs 12H (transition confirmed)
-      //           1H current longAcc LOW or FALLING (shorts entering NOW)
-      //           Taker buySellRatio < 1.0 (sell takers dominant = shorts aggressive)
+      // Swing amplitude must be significant (not tiny noise)
+      const priceRange = Math.max(...highs) - Math.min(...lows);
+      const peakSpread = peak2.price - peak1.price;
+      if (peak1.price === 0) continue;
+      const swing = (peak2.price - peak1.price) / peak1.price;
+      if (swing < cfg.minSwingAmp) continue;
 
-      const ls12 = coin.lsRatio12h;  // avg long account ratio over 12H
-      const ls4  = coin.lsRatio4h;   // avg long account ratio over 4H
-      const ls1  = coin.lsRatio1h;   // current long account ratio (1H)
-      const taker = coin.takerBuyRatio; // >1 buy-heavy, <1 sell-heavy
+      // There must be a trough BETWEEN the two peaks
+      const troughBetween = troughs.filter(t => t.idx > peak1.idx && t.idx < peak2.idx);
+      if (!troughBetween.length) continue;
+      const midTrough = troughBetween.reduce((a,b) => b.price < a.price ? b : a); // lowest trough between
 
-      // Key derived signals
-      const shift12to1 = ls12 - ls1;   // how much longs reduced (positive = longs leaving)
-      const shift12to4 = ls12 - ls4;   // 4H confirms trend
-      const shortsNow  = ls1 < 0.50;   // shorts are majority right now
+      // Retrace: trough must be meaningfully below peak1 (not just a tiny dip)
+      const retrace = (peak1.price - midTrough.price) / (peak2.price - midTrough.price + 0.0001);
+      if (retrace < cfg.minRetraceRatio) continue;
 
+      // ── STEP 4: Confirm currently dropping from peak2 ──
+      // Check that recent candles (after peak2) are lower than peak2
+      const afterPeak2 = candles.slice(peak2.idx + 1);
+      if (!afterPeak2.length) continue;
+
+      const currentClose = closes[n - 1];
+      const dropFromPeak = (peak2.price - currentClose) / peak2.price;
+      if (dropFromPeak < cfg.dropFromPeak) continue;
+
+      // ── STEP 5: Confirm the drop is recent (not already recovered) ──
+      // Price should still be falling: last close < close 3 candles ago
+      const recentFalling = closes[n-1] < closes[Math.max(0, n-4)];
+
+      // ── STEP 6: Score the pattern ──
       let score = 0;
-      let checks = { '12h': false, '4h': false, '1h': false, 'up': false };
 
-      // ── CHECK 1: 12H Long Dominance — 1.4× equivalent ──
-      // longAcc > 0.50 = longs dominant at all; > 0.52 = clearly dominant (≈1.4× ratio)
-      if (ls12 > 0.55)      { score += 3; checks['12h'] = true; }
-      else if (ls12 > 0.52) { score += 2; checks['12h'] = 'half'; }
-      else if (ls12 > 0.50) { score += 1; checks['12h'] = 'half'; }
+      // HH strength (how much higher is HH2 vs HH1)
+      const hhStrength = (peak2.price - peak1.price) / peak1.price;
+      if (hhStrength > 0.08) score += 30;
+      else if (hhStrength > 0.04) score += 20;
+      else score += 10;
 
-      // ── CHECK 2: 4H Confirms Shift (declining long ratio) ──
-      // ls4 < ls12 means longs are exiting/being flushed in last 4H
-      if (shift12to4 > 0.03 && ls4 < 0.52)  { score += 2; checks['4h'] = true; }
-      else if (shift12to4 > 0.015)            { score += 1; checks['4h'] = 'half'; }
-      else if (ls4 < ls12)                    { score += 1; checks['4h'] = 'half'; }
-      // 4H absolute short majority also counts
-      if (ls4 < 0.48) { score += 1; checks['4h'] = checks['4h'] || 'half'; }
+      // Retrace quality (deeper retrace = cleaner pattern)
+      if (retrace > 0.5) score += 25;
+      else if (retrace > 0.35) score += 15;
+      else score += 8;
 
-      // ── CHECK 3: 1H Shorts Building NOW (the squeeze fuel) ──
-      // ls1 < 0.50 = shorts are majority, or a big shift from 12H avg
-      if (ls1 < 0.47 || shift12to1 > 0.06)      { score += 3; checks['1h'] = true; }
-      else if (ls1 < 0.49 || shift12to1 > 0.035) { score += 2; checks['1h'] = 'half'; }
-      else if (ls1 < 0.50 || shift12to1 > 0.02)  { score += 1; checks['1h'] = 'half'; }
+      // Drop from peak2 (actively dropping)
+      if (dropFromPeak > 0.05) score += 25;
+      else if (dropFromPeak > 0.025) score += 15;
+      else score += 8;
 
-      // ── BONUS: Taker selling (shorts aggressively opening) ──
-      if (taker < 0.95)       score += 2;  // strong sell-taker dominance
-      else if (taker < 0.99)  score += 1;  // mild sell bias
+      // Currently falling confirmed
+      if (recentFalling) score += 15;
 
-      // ── BONUS: Momentum shift magnitude ──
-      if (shift12to1 > 0.08) score += 1;  // very strong rotation
+      // Pattern recency: prefer recent patterns
+      const recency = peak2.idx / n;
+      score += Math.round(recency * 5);
 
-      // ── CHECK 4: Price momentum ──
-      if (chg > 3)       { score += 2; checks['up'] = true; }
-      else if (chg > 0)  { score += 1; checks['up'] = 'half'; }
+      // Peak separation (not too close, not too far)
+      const separation = peak2.idx - peak1.idx;
+      if (separation > 20 && separation < 200) score += 5;
 
-      // ── CHECK 5: 15M Shorts dominant (entry confirmation) ──
-      const taker15m = coin.taker15mRatio || 1;
-      const shorts15m = taker15m < 1.0; // sell takers > buy takers on 15m
-      if (taker15m < 0.95) score += 2;
-      else if (taker15m < 1.0) score += 1;
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = {
+          peak1, peak2, midTrough,
+          retrace, hhStrength, dropFromPeak,
+          recentFalling, score,
+          afterCandles: afterPeak2.length,
+          currentClose,
+        };
+      }
 
-      // ── HARD FILTER GATES ──
-      if (f12h && checks['12h'] === false) continue;
-      if (f4h  && checks['4h']  === false) continue;
-      if (f1h  && checks['1h']  === false) continue;
-      if (f15m && !shorts15m) continue;
-      if (fup  && chg <= 0) continue;
-
-      scanData.push({
-        sym, chg, score, checks, ls1, ls4, ls12,
-        taker, taker15m, shorts15m,
-        h1l: coin.h1l, h1s: coin.h1s,
-        h4l: coin.h4l, h4s: coin.h4s,
-        h12l: coin.h12l, h12s: coin.h12s,
-        takerBuyRatio: coin.takerBuyRatio,
-        price: ticker.price || 0,
-        signal: score >= 8 ? 'strong' : 'mod',
-      });
+      // Only need the most recent valid HH1 for this HH2
+      break;
     }
 
-    scanData.sort((a,b) => b.score - a.score);
-
-    setProgress(100, 'Done!');
-    setTimeout(() => showProgress(false), 600);
-
-    // Update stats
-    const strong = scanData.filter(c => c.signal === 'strong').length;
-    $('sTotal').textContent = liqData.length;
-    $('sPassed').textContent = scanData.length;
-    $('sStrong').textContent = strong;
-    $('statRow').style.display = 'flex';
-
-    // Source badge
-    const srcBadge = $('srcBadge');
-    srcBadge.innerHTML = `<span>✓ Live</span> · Binance Futures L/S Ratio + Taker Volume · <span>${liqData.length} pairs analyzed</span>`;
-    srcBadge.style.display = 'block';
-
-    $('ts').textContent = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-
-    renderResults();
-
-  } catch(err) {
-    showProgress(false);
-    showErr('⚠ Scan failed: ' + err.message + '. Check connection and try again.');
-    console.error(err);
+    if (bestMatch) break; // found most recent pattern, stop
   }
 
-  setBusy(false);
+  if (!bestMatch) return null;
+
+  // ── STEP 7: Compute confidence % ──
+  // Max theoretical score ~100
+  const confidence = Math.min(99, Math.round(bestMatch.score));
+
+  return {
+    ...bestMatch,
+    confidence,
+    signal: confidence >= 65 ? 'strong' : 'mod',
+    candles,
+  };
 }
 
-// ─── RENDER ───
-function renderResults() {
-  const strong = scanData.filter(c => c.signal === 'strong');
-  const mod = scanData.filter(c => c.signal === 'mod');
-  const out = $('out');
+// ── DRAW MINI CHART ──
+function drawMiniChart(canvas, candles, match) {
+  const W = canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+  const H = canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
 
-  if (!scanData.length) {
+  const n = candles.length;
+  // Show last 120 candles for visibility
+  const view = candles.slice(Math.max(0, n - 120));
+  const vn = view.length;
+
+  const mn = Math.min(...view.map(c => c.l));
+  const mx = Math.max(...view.map(c => c.h));
+  const pad = (mx - mn) * 0.1;
+  const lo = mn - pad, hi = mx + pad;
+
+  const xOf = i => (i / (vn - 1)) * W;
+  const yOf = p => H - ((p - lo) / (hi - lo)) * H;
+
+  // Draw close line
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, 'rgba(107,92,231,0.3)');
+  grad.addColorStop(1, 'rgba(107,92,231,0)');
+
+  ctx.beginPath();
+  view.forEach((c, i) => { i === 0 ? ctx.moveTo(xOf(i), yOf(c.c)) : ctx.lineTo(xOf(i), yOf(c.c)); });
+  ctx.strokeStyle = '#6b5ce7';
+  ctx.lineWidth = 1.5 * window.devicePixelRatio;
+  ctx.stroke();
+
+  // Fill under line
+  ctx.lineTo(xOf(vn-1), H); ctx.lineTo(0, H); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+
+  // Overlay: draw drop portion in red
+  const offset = Math.max(0, n - 120);
+  const p2ViewIdx = match.peak2.idx - offset;
+  if (p2ViewIdx >= 0 && p2ViewIdx < vn) {
+    ctx.beginPath();
+    for (let i = p2ViewIdx; i < vn; i++) {
+      i === p2ViewIdx ? ctx.moveTo(xOf(i), yOf(view[i].c)) : ctx.lineTo(xOf(i), yOf(view[i].c));
+    }
+    ctx.strokeStyle = '#ff4466';
+    ctx.lineWidth = 2 * window.devicePixelRatio;
+    ctx.stroke();
+
+    // Peak2 dot
+    ctx.beginPath();
+    ctx.arc(xOf(p2ViewIdx), yOf(match.peak2.price), 3 * window.devicePixelRatio, 0, Math.PI * 2);
+    ctx.fillStyle = '#8b7cf8'; ctx.fill();
+  }
+
+  // Peak1 dot
+  const p1ViewIdx = match.peak1.idx - offset;
+  if (p1ViewIdx >= 0 && p1ViewIdx < vn) {
+    ctx.beginPath();
+    ctx.arc(xOf(p1ViewIdx), yOf(match.peak1.price), 3 * window.devicePixelRatio, 0, Math.PI * 2);
+    ctx.fillStyle = '#6b5ce7'; ctx.fill();
+  }
+}
+
+// ── FORMAT ──
+function fmtPct(n) { return (n * 100).toFixed(2) + '%'; }
+function fmtP(p, ref) {
+  if (p < 0.0001) return p.toFixed(8);
+  if (p < 0.01) return p.toFixed(5);
+  if (p < 1) return p.toFixed(4);
+  if (p < 100) return p.toFixed(2);
+  return p.toFixed(1);
+}
+
+// ── RENDER ──
+function renderResults() {
+  const out = $('out');
+  if (!results.length) {
     out.innerHTML = `<div class="list"><div class="empty">
-      <div class="empty-ico">🔍</div>
-      <div class="empty-t">No coins matched</div>
-      <div class="empty-s">Try relaxing some filters or rescanning</div>
+      <div class="empty-ico">📊</div>
+      <div class="empty-t">No pattern found</div>
+      <div class="empty-s">Try a looser sensitivity or different timeframe.<br>The pattern may not be forming right now.</div>
     </div></div>`;
     return;
   }
 
+  const strong = results.filter(r => r.signal === 'strong');
+  const mod    = results.filter(r => r.signal === 'mod');
   let html = '';
 
   if (strong.length) {
-    html += `<div class="divider">🔥 Strong Setup (${strong.length})</div><div class="list">`;
-    strong.forEach((c,i) => { html += card(c, i); });
-    html += '</div>';
+    html += `<div class="sec-lbl">🔥 Strong Match (${strong.length})</div><div class="list" id="strongList"></div>`;
   }
   if (mod.length) {
-    html += `<div class="divider">⚡ Moderate Setup (${mod.length})</div><div class="list">`;
-    mod.forEach((c,i) => { html += card(c, i + strong.length); });
-    html += '</div>';
+    html += `<div class="sec-lbl">⚡ Moderate Match (${mod.length})</div><div class="list" id="modList"></div>`;
   }
-
   out.innerHTML = html;
 
-  // Stagger animation
-  out.querySelectorAll('.card').forEach((el,i) => {
-    el.style.animationDelay = (i * 0.045) + 's';
+  const buildCard = (r, idx) => {
+    const chgCls = r.chg >= 0 ? 'up' : 'dn';
+    const chgStr = (r.chg >= 0 ? '+' : '') + r.chg.toFixed(2) + '%';
+    const dropCls = r.match.dropFromPeak > 0.03 ? 'r' : 'y';
+
+    const el = document.createElement('div');
+    el.className = 'card ' + r.signal;
+    el.style.animationDelay = (idx * 0.04) + 's';
+    el.innerHTML = `
+      <div class="ctop">
+        <div class="cico">
+          <img src="https://assets.coincap.io/assets/icons/${r.sym.toLowerCase()}@2x.png"
+               onerror="this.style.display='none';this.parentNode.textContent='${r.sym.slice(0,3)}'" alt="">
+        </div>
+        <div class="cmain">
+          <div class="csym">${r.sym}<span class="crank">#${idx+1}</span></div>
+          <div class="cmeta"><span class="${chgCls}">${chgStr}</span> · $${fmtP(r.price)}</div>
+        </div>
+        <div class="conf-badge ${r.signal === 'strong' ? 's' : 'm'}">${r.match.confidence}% match</div>
+      </div>
+      <div class="mini-chart"><canvas id="chart-${r.sym}"></canvas></div>
+      <div class="pmets">
+        <div class="pmet">
+          <div class="pmet-l">HH Strength</div>
+          <div class="pmet-v v">+${fmtPct(r.match.hhStrength)}</div>
+        </div>
+        <div class="pmet">
+          <div class="pmet-l">Retrace</div>
+          <div class="pmet-v g">${fmtPct(r.match.retrace)}</div>
+        </div>
+        <div class="pmet">
+          <div class="pmet-l">Drop Now</div>
+          <div class="pmet-v ${dropCls}">-${fmtPct(r.match.dropFromPeak)}</div>
+        </div>
+        <div class="pmet">
+          <div class="pmet-l">Falling</div>
+          <div class="pmet-v ${r.match.recentFalling ? 'r' : 'g'}">${r.match.recentFalling ? '↓ YES' : '↗ No'}</div>
+        </div>
+      </div>
+      <div class="conf-row">
+        <div class="conf-label">Confidence</div>
+        <div class="conf-track"><div class="conf-fill" style="width:${r.match.confidence}%"></div></div>
+        <div class="conf-pct">${r.match.confidence}%</div>
+      </div>
+      <button class="obtn" onclick="event.stopPropagation();openChart('${r.sym}')">
+        📈 Open ${r.sym}/USDT on Binance
+      </button>`;
+    el.onclick = () => openChart(r.sym);
+    return el;
+  };
+
+  strong.forEach((r,i) => {
+    const el = buildCard(r, i);
+    document.getElementById('strongList')?.appendChild(el);
+    // Draw chart after DOM insert
+    requestAnimationFrame(() => {
+      const canvas = document.getElementById('chart-' + r.sym);
+      if (canvas) drawMiniChart(canvas, r.match.candles, r.match);
+    });
+  });
+
+  mod.forEach((r,i) => {
+    const el = buildCard(r, i + strong.length);
+    document.getElementById('modList')?.appendChild(el);
+    requestAnimationFrame(() => {
+      const canvas = document.getElementById('chart-' + r.sym);
+      if (canvas) drawMiniChart(canvas, r.match.candles, r.match);
+    });
   });
 }
 
-function card(c, idx) {
-  const chgStr = (c.chg >= 0 ? '+' : '') + c.chg.toFixed(2) + '%';
-  const chgCls = c.chg >= 0 ? 'up' : 'down';
+// ── MAIN SCAN ──
+async function runScan() {
+  const btn = $('scanBtn');
+  btn.className = 'scan-btn busy';
+  btn.innerHTML = '<div class="spin"></div><span>SCANNING...</span>';
+  $('progWrap').style.display = 'block';
+  $('statRow').style.display = 'none';
+  $('out').innerHTML = '';
+  showErr('');
+  results = [];
+  setProgress(0, 'Loading top coins from Binance...');
 
-  // Ratio bars
-  const b12 = Math.min(95, (c.h12l / (c.h12l + c.h12s + 1)) * 100);
-  const b4 = Math.min(95, (c.h4l / (c.h4l + c.h4s + 1)) * 100);
-  const b1s = Math.min(95, (c.h1s / (c.h1l + c.h1s + 1)) * 100);
+  try {
+    // Step 1: Get live top coins
+    const coins = await fetchBinanceTop100();
+    const total = coins.length;
+    setProgress(5, `Scanning ${total} coins on ${activeTF}...`);
 
-  // Score dots
-  const dots = [2,4,6,8,10].map(thresh =>
-    `<div class="dot ${c.score >= thresh ? 'on' : c.score >= thresh-1 ? 'half' : ''}"></div>`
-  ).join('');
+    // Step 2: Fetch klines and detect pattern in batches
+    const batchSize = 6;
+    let done = 0;
 
-  // L/S ratio display
-  const lsLabel = ls => ls >= 0.55 ? `🔴 ${(ls*100).toFixed(0)}% long` : ls <= 0.45 ? `🟢 ${((1-ls)*100).toFixed(0)}% short` : `⚖ balanced`;
-  const t15mLabel = c.taker15m < 0.95 ? `🔴 ${c.taker15m.toFixed(3)} sell` : c.taker15m < 1.0 ? `🟡 ${c.taker15m.toFixed(3)} sell` : `🟢 ${c.taker15m.toFixed(3)} buy`;
+    for (let i = 0; i < coins.length; i += batchSize) {
+      const batch = coins.slice(i, i + batchSize);
+      await Promise.allSettled(batch.map(async coin => {
+        try {
+          const candles = await fetchKlines(coin.sym, activeTF, 500);
+          if (candles.length < 50) return;
 
-  return `
-<div class="card ${c.signal}" onclick="openChart('${c.sym}')">
-  <div class="ctop">
-    <div class="cico">
-      <img src="https://assets.coincap.io/assets/icons/${c.sym.toLowerCase()}@2x.png"
-           onerror="this.style.display='none';this.parentNode.textContent='${c.sym.slice(0,3)}'" alt="">
-    </div>
-    <div class="cmain">
-      <div class="csym">${c.sym}<span class="crank">#${idx+1}</span></div>
-      <div class="cchg ${chgCls}">${chgStr} · $${c.price < 0.01 ? c.price.toFixed(6) : c.price < 1 ? c.price.toFixed(4) : c.price.toFixed(2)}</div>
-      <div class="cdots">${dots}</div>
-    </div>
-    <div class="cbadge ${c.signal}">
-      ${c.signal === 'strong' ? '🔥 STRONG' : '⚡ MOD'}<br>
-      ${c.score}/10
-    </div>
-  </div>
+          const match = detectPattern(candles, activeSens);
+          if (match) {
+            results.push({
+              sym: coin.sym,
+              chg: coin.chg || (candles[candles.length-1].c - candles[0].o) / candles[0].o * 100,
+              price: coin.price || candles[candles.length-1].c,
+              match,
+              signal: match.signal,
+            });
+          }
+        } catch(e) { /* skip failed symbols */ }
+        done++;
+      }));
 
-  <div class="lgrid" style="grid-template-columns:repeat(4,1fr)">
-    <div class="lc">
-      <div class="ltf">12H · Flush</div>
-      <div class="lr"><span class="ll">Long</span><span class="lv g">${fmt(c.h12l)}</span></div>
-      <div class="lr"><span class="ll">Short</span><span class="lv r">${fmt(c.h12s)}</span></div>
-      <div class="rbar"><div class="rfill g" style="width:${Math.min(95,(c.h12l/(c.h12l+c.h12s+1))*100)}%"></div></div>
-      <div class="rratio">${lsLabel(c.ls12)}</div>
-    </div>
-    <div class="lc">
-      <div class="ltf">4H · Confirm</div>
-      <div class="lr"><span class="ll">Long</span><span class="lv g">${fmt(c.h4l)}</span></div>
-      <div class="lr"><span class="ll">Short</span><span class="lv r">${fmt(c.h4s)}</span></div>
-      <div class="rbar"><div class="rfill g" style="width:${Math.min(95,(c.h4l/(c.h4l+c.h4s+1))*100)}%"></div></div>
-      <div class="rratio">${lsLabel(c.ls4)}</div>
-    </div>
-    <div class="lc">
-      <div class="ltf">1H · Shorts↑</div>
-      <div class="lr"><span class="ll">Short</span><span class="lv r">${fmt(c.h1s)}</span></div>
-      <div class="lr"><span class="ll">Long</span><span class="lv g">${fmt(c.h1l)}</span></div>
-      <div class="rbar"><div class="rfill r" style="width:${Math.min(95,(c.h1s/(c.h1l+c.h1s+1))*100)}%"></div></div>
-      <div class="rratio">${lsLabel(c.ls1)}</div>
-    </div>
-    <div class="lc">
-      <div class="ltf">15M · Entry</div>
-      <div class="lr"><span class="ll">Taker</span><span class="lv ${c.taker15m < 1 ? 'r' : 'g'}">${c.taker15m < 1 ? 'SELL' : 'BUY'}</span></div>
-      <div class="lr"><span class="ll">Ratio</span><span class="lv ${c.taker15m < 1 ? 'r' : 'g'}">${c.taker15m.toFixed(3)}</span></div>
-      <div class="rbar"><div class="rfill ${c.taker15m < 1 ? 'r' : 'g'}" style="width:${Math.min(95,Math.abs(1-c.taker15m)*500+20)}%"></div></div>
-      <div class="rratio">${t15mLabel}</div>
-    </div>
-  </div>
+      const pct = 5 + (done / total) * 90;
+      setProgress(pct, `Analyzed ${done}/${total} · ${results.length} matches so far...`);
+      // small yield to keep UI responsive
+      await new Promise(r => setTimeout(r, 20));
+    }
 
-  <button class="obtn" onclick="event.stopPropagation();openChart('${c.sym}')">
-    📈 ${c.sym}/USDT on Binance Spot
-  </button>
-</div>`;
+    // Sort by confidence
+    results.sort((a,b) => b.match.confidence - a.match.confidence);
+
+    setProgress(100, 'Done!');
+    setTimeout(() => { $('progWrap').style.display = 'none'; }, 500);
+
+    $('sScanned').textContent = done;
+    $('sMatched').textContent = results.length;
+    $('sStrong').textContent = results.filter(r => r.signal === 'strong').length;
+    $('statRow').style.display = 'flex';
+
+    renderResults();
+
+  } catch(e) {
+    $('progWrap').style.display = 'none';
+    showErr('⚠ Scan failed: ' + e.message);
+  }
+
+  btn.className = 'scan-btn';
+  btn.innerHTML = '<span id="btnTxt">↺ RE-SCAN</span>';
 }
 
 function openChart(sym) {
   window.open(`https://www.binance.com/en/trade/${sym}_USDT?type=spot`, '_blank');
 }
 
-function toggleHow() {
-  const b = $('howBody');
-  b.classList.toggle('open');
-  $('howArrow').textContent = b.classList.contains('open') ? '▼' : '▶';
-}
-
-// Auto-scan on load
-window.addEventListener('DOMContentLoaded', () => setTimeout(runScan, 300));
+// Auto-run
+window.addEventListener('DOMContentLoaded', () => setTimeout(runScan, 400));
 </script>
 </body>
 </html>
