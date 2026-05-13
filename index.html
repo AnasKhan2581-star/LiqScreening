@@ -361,7 +361,7 @@ function timeout(ms) {
   return c;
 }
 
-async function fetchKlines(sym, tf, limit = 500) {
+async function fetchKlines(sym, tf, limit = 200) {
   const c = timeout(10000);
   const res = await fetch(
     `https://api.binance.com/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=${limit}`,
@@ -786,7 +786,7 @@ async function runScan() {
       const batch = coins.slice(i, i + batchSize);
       await Promise.allSettled(batch.map(async coin => {
         try {
-          const candles = await fetchKlines(coin.sym, activeTF, 500);
+          const candles = await fetchKlines(coin.sym, activeTF, 200);
           if (candles.length < 60) return;
 
           const match = detectPattern(candles, activeSens);
