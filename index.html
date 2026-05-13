@@ -34,14 +34,12 @@
 html,body{height:100%;overflow-x:hidden}
 body{background:var(--bg);color:var(--t1);font-family:var(--head)}
 
-/* grain overlay */
 body::after{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.025;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-size:200px;
 }
 
-/* HEADER */
 .hdr{
   padding:20px 16px 0;
   position:sticky;top:0;z-index:100;
@@ -50,32 +48,18 @@ body::after{
   border-bottom:1px solid var(--b1);
 }
 .hdr-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px}
-.brand{
-  font-family:var(--head);font-size:22px;font-weight:800;
-  letter-spacing:-1px;line-height:1
-}
-.brand em{
-  color:transparent;font-style:normal;
-  background:linear-gradient(135deg,var(--vl),var(--g));
-  -webkit-background-clip:text;background-clip:text;
-}
-.live-dot{
-  width:7px;height:7px;border-radius:50%;background:var(--g);
-  box-shadow:0 0 8px var(--g);margin-top:8px;
-  animation:blink 2s infinite
-}
+.brand{font-family:var(--head);font-size:22px;font-weight:800;letter-spacing:-1px;line-height:1}
+.brand em{color:transparent;font-style:normal;background:linear-gradient(135deg,var(--vl),var(--g));-webkit-background-clip:text;background-clip:text;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g);margin-top:8px;animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 .sub{font-size:11px;color:var(--t3);font-family:var(--mono);margin-bottom:14px;letter-spacing:.3px}
 
 /* PATTERN PREVIEW */
 .pat-preview{
-  margin-bottom:14px;
-  background:var(--s1);border:1px solid var(--b1);
-  border-radius:10px;padding:10px 14px;
-  display:flex;align-items:center;gap:12px
+  margin-bottom:14px;background:var(--s1);border:1px solid var(--b1);
+  border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px
 }
 .pat-svg{flex-shrink:0}
-.pat-info{}
 .pat-name{font-size:12px;font-weight:700;color:var(--vl);letter-spacing:.5px;margin-bottom:2px}
 .pat-desc{font-size:10px;color:var(--t3);font-family:var(--mono);line-height:1.5}
 
@@ -88,10 +72,7 @@ body::after{
   border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:700;
   color:var(--t3);cursor:pointer;transition:all .18s;
 }
-.tf-pill.active{
-  background:var(--vd);border-color:var(--vl);color:var(--vl);
-  box-shadow:0 0 12px rgba(107,92,231,0.2)
-}
+.tf-pill.active{background:var(--vd);border-color:var(--vl);color:var(--vl);box-shadow:0 0 12px rgba(107,92,231,0.2)}
 .tf-pill:active{transform:scale(.97)}
 
 /* SENSITIVITY ROW */
@@ -100,7 +81,6 @@ body::after{
   background:var(--s1);border:1px solid var(--b1);
   border-radius:8px;padding:10px 14px;margin-bottom:10px;gap:10px
 }
-.sens-info{}
 .sens-name{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:1px}
 .sens-desc{font-size:10px;color:var(--t3);font-family:var(--mono)}
 .sens-btns{display:flex;gap:4px;flex-shrink:0}
@@ -121,15 +101,9 @@ body::after{
   display:flex;align-items:center;justify-content:center;gap:8px;
   transition:all .2s;position:relative;overflow:hidden
 }
-.scan-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);
-}
+.scan-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);}
 .scan-btn:active{transform:scale(.98)}
-.scan-btn.busy{
-  background:var(--s2);color:var(--vl);
-  border:1px solid var(--vg);pointer-events:none
-}
+.scan-btn.busy{background:var(--s2);color:var(--vl);border:1px solid var(--vg);pointer-events:none}
 .spin{width:14px;height:14px;border:2px solid rgba(107,92,231,.3);border-top-color:var(--vl);border-radius:50%;animation:spin .65s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -141,14 +115,9 @@ body::after{
 
 /* STATS */
 .stats{display:flex;gap:6px;padding:0 16px 12px}
-.stat{
-  flex:1;background:var(--s1);border:1px solid var(--b1);
-  border-radius:8px;padding:9px 8px;text-align:center
-}
+.stat{flex:1;background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:9px 8px;text-align:center}
 .stat-n{font-family:var(--mono);font-size:18px;font-weight:700;display:block}
-.stat-n.v{color:var(--vl)}
-.stat-n.g{color:var(--g)}
-.stat-n.y{color:var(--y)}
+.stat-n.v{color:var(--vl)}.stat-n.g{color:var(--g)}.stat-n.y{color:var(--y)}
 .stat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;margin-top:1px;display:block}
 
 /* ERROR */
@@ -191,16 +160,11 @@ body::after{
 .cmeta .up{color:var(--g)}.cmeta .dn{color:var(--r)}
 
 /* MINI CHART */
-.mini-chart{
-  padding:0 13px 0;height:52px;position:relative;margin-bottom:6px
-}
+.mini-chart{padding:0 13px 0;height:52px;position:relative;margin-bottom:6px}
 .mini-chart canvas{width:100%;height:100%;display:block}
 
 /* PATTERN METRICS */
-.pmets{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  border-top:1px solid var(--b1);
-}
+.pmets{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--b1);}
 .pmet{padding:8px 10px;border-right:1px solid var(--b1)}
 .pmet:last-child{border-right:none}
 .pmet-l{font-size:8px;color:var(--t3);font-family:var(--mono);text-transform:uppercase;margin-bottom:3px}
@@ -208,10 +172,7 @@ body::after{
 .pmet-v.g{color:var(--g)}.pmet-v.r{color:var(--r)}.pmet-v.v{color:var(--vl)}.pmet-v.y{color:var(--y)}
 
 /* CONFIDENCE BAR */
-.conf-row{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 13px 10px;border-top:1px solid var(--b1)
-}
+.conf-row{display:flex;align-items:center;gap:8px;padding:8px 13px 10px;border-top:1px solid var(--b1)}
 .conf-label{font-size:9px;color:var(--t3);font-family:var(--mono);width:60px;flex-shrink:0}
 .conf-track{flex:1;height:4px;background:var(--b1);border-radius:2px;overflow:hidden}
 .conf-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--v),var(--vl));transition:width .4s}
@@ -219,6 +180,19 @@ body::after{
 .conf-badge{font-size:9px;font-family:var(--mono);font-weight:700;padding:3px 7px;border-radius:5px;flex-shrink:0}
 .conf-badge.s{background:var(--vd);color:var(--vl);border:1px solid rgba(107,92,231,.3)}
 .conf-badge.m{background:var(--yd);color:var(--y);border:1px solid rgba(255,193,66,.2)}
+
+/* SWEEP DEPTH BADGE */
+.sweep-row{
+  padding:6px 13px 8px;border-top:1px solid var(--b1);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap
+}
+.sweep-tag{
+  font-size:9px;font-family:var(--mono);font-weight:700;
+  padding:3px 8px;border-radius:5px;
+  background:rgba(0,229,160,0.08);color:var(--g);
+  border:1px solid rgba(0,229,160,0.2)
+}
+.sweep-note{font-size:9px;font-family:var(--mono);color:var(--t3);flex:1}
 
 /* OPEN BTN */
 .obtn{
@@ -244,30 +218,56 @@ body::after{
   <div class="hdr-top">
     <div>
       <div class="brand">Peak<em>Sweep</em></div>
-      <div class="sub">HH → Drop → HH → Pulling Back · Pattern Scanner</div>
+      <div class="sub">HH → Sweep Below 2 Prior HHs → New HH → Dropping</div>
     </div>
     <div class="live-dot"></div>
   </div>
 
   <!-- Pattern preview -->
   <div class="pat-preview">
-    <svg class="pat-svg" width="80" height="40" viewBox="0 0 80 40">
-      <polyline points="0,38 10,28 16,32 24,16 30,22 40,8 46,18 58,2 68,14"
-        fill="none" stroke="#6b5ce7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- current drop arrow -->
-      <polyline points="58,2 68,14 76,26"
-        fill="none" stroke="#ff4466" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-        stroke-dasharray="4,2"/>
-      <circle cx="40" cy="8" r="2.5" fill="#6b5ce7"/>
-      <circle cx="58" cy="2" r="2.5" fill="#8b7cf8"/>
-      <circle cx="76" cy="26" r="2.5" fill="#ff4466"/>
-      <text x="36" y="7" fill="#6b5ce7" font-size="5" font-family="monospace">HH1</text>
-      <text x="54" y="1" fill="#8b7cf8" font-size="5" font-family="monospace">HH2</text>
-      <text x="62" y="32" fill="#ff4466" font-size="5" font-family="monospace">now↓</text>
+    <!--
+      Pattern SVG:
+      Peak A (small) → Peak B (higher) → retrace dips below BOTH A and B wicks → Peak C (new HH) → currently falling
+    -->
+    <svg class="pat-svg" width="90" height="44" viewBox="0 0 90 44">
+      <!-- Price path -->
+      <!-- Rise to peak A -->
+      <polyline points="0,42 8,30 14,34 22,18"
+        fill="none" stroke="#3d4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Rise to peak B (higher) -->
+      <polyline points="22,18 28,24 36,10"
+        fill="none" stroke="#6b5ce7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Retrace: dips below BOTH peak A (18) and peak B (10) wicks — goes down to ~36 -->
+      <polyline points="36,10 42,20 46,38"
+        fill="none" stroke="#ff4466" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3,2"/>
+      <!-- Bounce to new HH (above 10) -->
+      <polyline points="46,38 52,28 60,4"
+        fill="none" stroke="#8b7cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Currently dropping from new HH -->
+      <polyline points="60,4 68,16 76,28"
+        fill="none" stroke="#ff4466" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Peak labels -->
+      <circle cx="22" cy="18" r="2.5" fill="#3d4560"/>
+      <text x="14" y="16" fill="#3d4560" font-size="5" font-family="monospace">HH1</text>
+      <circle cx="36" cy="10" r="2.5" fill="#6b5ce7"/>
+      <text x="28" y="8" fill="#6b5ce7" font-size="5" font-family="monospace">HH2</text>
+      <!-- Sweep level line through both HH1 and HH2 highs -->
+      <line x1="22" y1="18" x2="46" y2="18" stroke="#3d4560" stroke-width="0.8" stroke-dasharray="2,2"/>
+      <line x1="36" y1="10" x2="46" y2="10" stroke="#6b5ce7" stroke-width="0.8" stroke-dasharray="2,2"/>
+      <!-- Trough dot -->
+      <circle cx="46" cy="38" r="2.5" fill="#ff4466"/>
+      <text x="38" y="43" fill="#ff4466" font-size="5" font-family="monospace">sweep</text>
+      <!-- New HH -->
+      <circle cx="60" cy="4" r="2.5" fill="#8b7cf8"/>
+      <text x="52" y="3" fill="#8b7cf8" font-size="5" font-family="monospace">HH3↑</text>
+      <!-- Now dot -->
+      <circle cx="76" cy="28" r="2.5" fill="#ff4466"/>
+      <text x="66" y="36" fill="#ff4466" font-size="5" font-family="monospace">↓now</text>
     </svg>
     <div class="pat-info">
-      <div class="pat-name">DOUBLE PEAK PULLBACK</div>
-      <div class="pat-desc">HH1 → retrace → HH2 higher<br>→ currently dropping from HH2</div>
+      <div class="pat-name">LIQUIDITY SWEEP → NEW HIGH → DROP</div>
+      <div class="pat-desc">HH1 → HH2 higher → retrace sweeps<br>below both HH wicks → HH3 (new ATH<br>of sequence) → currently dropping</div>
     </div>
   </div>
 
@@ -317,13 +317,10 @@ body::after{
 <div id="out"></div>
 
 <script>
-// ── STATE ──
 let activeTF = '15m';
 let activeSens = 'normal';
 let results = [];
 
-// ── TOP 100 BINANCE SPOT COINS BY MARKET CAP ──
-// Fetched live then filtered against Binance spot pairs
 const TOP100 = [
   'BTC','ETH','BNB','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT',
   'TON','TRX','SHIB','SUI','LTC','HBAR','BCH','NEAR','PEPE','APT',
@@ -344,32 +341,26 @@ function setTF(el) {
   el.classList.add('active');
   activeTF = el.dataset.tf;
 }
-
 function setSens(el) {
   document.querySelectorAll('.sens-btn').forEach(e => e.classList.remove('on'));
   el.classList.add('on');
   activeSens = el.dataset.s;
 }
-
 function setProgress(pct, lbl) {
   $('progFill').style.width = pct + '%';
   $('progLbl').textContent = lbl;
 }
-
 function showErr(msg) {
   const e = $('err');
   e.textContent = msg;
   e.style.display = msg ? 'block' : 'none';
 }
-
-// ── ABORT CONTROLLER HELPER ──
 function timeout(ms) {
   const c = new AbortController();
   setTimeout(() => c.abort(), ms);
   return c;
 }
 
-// ── FETCH BINANCE KLINES ──
 async function fetchKlines(sym, tf, limit = 500) {
   const c = timeout(10000);
   const res = await fetch(
@@ -378,18 +369,12 @@ async function fetchKlines(sym, tf, limit = 500) {
   );
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const raw = await res.json();
-  // [openTime, open, high, low, close, volume, ...]
   return raw.map(k => ({
-    t: k[0],
-    o: parseFloat(k[1]),
-    h: parseFloat(k[2]),
-    l: parseFloat(k[3]),
-    c: parseFloat(k[4]),
-    v: parseFloat(k[5]),
+    t: k[0], o: parseFloat(k[1]), h: parseFloat(k[2]),
+    l: parseFloat(k[3]), c: parseFloat(k[4]), v: parseFloat(k[5]),
   }));
 }
 
-// ── FETCH LIVE TOP 300 BINANCE SPOT LIST ──
 async function fetchBinanceTop100() {
   try {
     const c = timeout(10000);
@@ -405,162 +390,193 @@ async function fetchBinanceTop100() {
   }
 }
 
-// ══════════════════════════════════════════════
-// ── PATTERN DETECTION ENGINE ──
-// Pattern: Higher High 1 → retrace → Higher High 2 → currently dropping
-// ══════════════════════════════════════════════
-
+// ══════════════════════════════════════════════════════════════
+// PATTERN ENGINE
+//
+// Required structure (all using WICKS / highs + lows):
+//
+//  1. Find HH1: a swing high
+//  2. Find HH2: a swing high AFTER HH1, higher than HH1
+//  3. Retrace between HH1 and HH2: trough low must be below HH1's high (wicks)
+//     [already implied if we have HH1 then another HH higher]
+//
+//  ** KEY NEW RULE **
+//  The retrace BETWEEN HH2 and HH3 (the final higher high) must have
+//  its lowest wick dip BELOW the wick highs of BOTH HH1 and HH2.
+//  i.e., trough.low < HH1.high  AND  trough.low < HH2.high
+//  (sweeping the liquidity/wicks of both prior peaks)
+//
+//  4. HH3: a new swing high ABOVE HH2 (the highest of the sequence)
+//  5. Currently dropping from HH3 (close below HH3 by minDrop)
+//
+// ══════════════════════════════════════════════════════════════
 function detectPattern(candles, sensitivity) {
-  // Sensitivity config
   const cfg = {
-    loose:  { peakWindow: 5,  minRetraceRatio: 0.15, minHHRatio: 1.005, dropFromPeak: 0.008, minSwingAmp: 0.03 },
-    normal: { peakWindow: 8,  minRetraceRatio: 0.25, minHHRatio: 1.01,  dropFromPeak: 0.012, minSwingAmp: 0.05 },
-    strict: { peakWindow: 12, minRetraceRatio: 0.35, minHHRatio: 1.02,  dropFromPeak: 0.02,  minSwingAmp: 0.08 },
+    loose:  { peakWindow: 4,  dropFromPeak: 0.005, minHHStep: 1.003, minAmp: 0.02 },
+    normal: { peakWindow: 6,  dropFromPeak: 0.01,  minHHStep: 1.005, minAmp: 0.03 },
+    strict: { peakWindow: 10, dropFromPeak: 0.018, minHHStep: 1.01,  minAmp: 0.05 },
   }[sensitivity];
 
-  const closes = candles.map(c => c.c);
+  const n      = candles.length;
   const highs  = candles.map(c => c.h);
   const lows   = candles.map(c => c.l);
-  const n      = candles.length;
+  const closes = candles.map(c => c.c);
+  const w      = cfg.peakWindow;
 
-  // ── STEP 1: Find significant peaks using local maxima ──
-  // A peak is a high that is the highest point in a window of ±peakWindow candles
+  // ── Find swing peaks (local high maxima using wick highs) ──
   function findPeaks() {
     const peaks = [];
-    const w = cfg.peakWindow;
     for (let i = w; i < n - w; i++) {
-      let isPeak = true;
+      let ok = true;
       for (let j = i - w; j <= i + w; j++) {
-        if (j !== i && highs[j] >= highs[i]) { isPeak = false; break; }
+        if (j !== i && highs[j] >= highs[i]) { ok = false; break; }
       }
-      if (isPeak) peaks.push({ idx: i, price: highs[i] });
+      if (ok) peaks.push({ idx: i, price: highs[i] });
     }
     return peaks;
   }
 
-  // ── STEP 2: Find significant troughs ──
+  // ── Find swing troughs (local low minima using wick lows) ──
   function findTroughs() {
     const troughs = [];
-    const w = Math.max(3, Math.floor(cfg.peakWindow * 0.6));
-    for (let i = w; i < n - w; i++) {
-      let isTrough = true;
-      for (let j = i - w; j <= i + w; j++) {
-        if (j !== i && lows[j] <= lows[i]) { isTrough = false; break; }
+    const tw = Math.max(3, Math.floor(w * 0.7));
+    for (let i = tw; i < n - tw; i++) {
+      let ok = true;
+      for (let j = i - tw; j <= i + tw; j++) {
+        if (j !== i && lows[j] <= lows[i]) { ok = false; break; }
       }
-      if (isTrough) troughs.push({ idx: i, price: lows[i] });
+      if (ok) troughs.push({ idx: i, price: lows[i] });
     }
     return troughs;
   }
 
   const peaks   = findPeaks();
   const troughs = findTroughs();
+  if (peaks.length < 3) return null;
 
-  if (peaks.length < 2) return null;
-
-  // ── STEP 3: Find the best HH1 → trough → HH2 sequence ──
-  // We scan backward from end to find the most recent valid pattern
-  let bestMatch = null;
+  // ── Scan for HH1 → HH2 → sweep-trough → HH3 → dropping ──
+  // We want the MOST RECENT valid pattern, so scan backward from the end
+  let best = null;
   let bestScore = 0;
 
-  for (let pi2 = peaks.length - 1; pi2 >= 1; pi2--) {
-    const peak2 = peaks[pi2];
-    // Only consider peaks that are NOT the very last candle (need drop after)
-    if (peak2.idx >= n - 3) continue;
+  // HH3 is the anchor: most recent peak not too close to end (need drop candles after)
+  for (let i3 = peaks.length - 1; i3 >= 2; i3--) {
+    const hh3 = peaks[i3];
 
-    for (let pi1 = pi2 - 1; pi1 >= 0; pi1--) {
-      const peak1 = peaks[pi1];
+    // HH3 must not be at the very tail — need at least 2 candles after it to show drop
+    if (hh3.idx >= n - 2) continue;
 
-      // HH2 must be HIGHER than HH1
-      if (peak2.price < peak1.price * cfg.minHHRatio) continue;
+    // Currently dropping from HH3
+    const currentClose = closes[n - 1];
+    const dropFromHH3 = (hh3.price - currentClose) / hh3.price;
+    if (dropFromHH3 < cfg.dropFromPeak) continue;
 
-      // Swing amplitude must be significant (not tiny noise)
-      const priceRange = Math.max(...highs) - Math.min(...lows);
-      const peakSpread = peak2.price - peak1.price;
-      if (peak1.price === 0) continue;
-      const swing = (peak2.price - peak1.price) / peak1.price;
-      if (swing < cfg.minSwingAmp) continue;
+    // Confirm active downward momentum: last close < close 3 bars ago
+    const recentFalling = closes[n-1] < closes[Math.max(0, n-4)];
 
-      // There must be a trough BETWEEN the two peaks
-      const troughBetween = troughs.filter(t => t.idx > peak1.idx && t.idx < peak2.idx);
-      if (!troughBetween.length) continue;
-      const midTrough = troughBetween.reduce((a,b) => b.price < a.price ? b : a); // lowest trough between
+    // ── Find HH2: a peak BEFORE hh3, lower than hh3 ──
+    for (let i2 = i3 - 1; i2 >= 1; i2--) {
+      const hh2 = peaks[i2];
 
-      // Retrace: trough must be meaningfully below peak1 (not just a tiny dip)
-      const retrace = (peak1.price - midTrough.price) / (peak2.price - midTrough.price + 0.0001);
-      if (retrace < cfg.minRetraceRatio) continue;
+      // HH3 must be strictly higher than HH2
+      if (hh3.price < hh2.price * cfg.minHHStep) continue;
 
-      // ── STEP 4: Confirm currently dropping from peak2 ──
-      // Check that recent candles (after peak2) are lower than peak2
-      const afterPeak2 = candles.slice(peak2.idx + 1);
-      if (!afterPeak2.length) continue;
+      // ── The sweep trough: lowest trough between HH2 and HH3 ──
+      const sweepTroughs = troughs.filter(t => t.idx > hh2.idx && t.idx < hh3.idx);
+      if (!sweepTroughs.length) continue;
+      const sweepTrough = sweepTroughs.reduce((a, b) => b.price < a.price ? b : a);
 
-      const currentClose = closes[n - 1];
-      const dropFromPeak = (peak2.price - currentClose) / peak2.price;
-      if (dropFromPeak < cfg.dropFromPeak) continue;
+      // *** CORE RULE: sweepTrough's wick LOW must be BELOW HH2's wick HIGH ***
+      // (it sweeps below the wick of HH2)
+      if (sweepTrough.price >= hh2.price) continue;
 
-      // ── STEP 5: Confirm the drop is recent (not already recovered) ──
-      // Price should still be falling: last close < close 3 candles ago
-      const recentFalling = closes[n-1] < closes[Math.max(0, n-4)];
+      // ── Find HH1: a peak BEFORE HH2, lower than HH2 ──
+      for (let i1 = i2 - 1; i1 >= 0; i1--) {
+        const hh1 = peaks[i1];
 
-      // ── STEP 6: Score the pattern ──
-      let score = 0;
+        // HH2 must be higher than HH1 (forming the higher high sequence)
+        if (hh2.price < hh1.price * cfg.minHHStep) continue;
 
-      // HH strength (how much higher is HH2 vs HH1)
-      const hhStrength = (peak2.price - peak1.price) / peak1.price;
-      if (hhStrength > 0.08) score += 30;
-      else if (hhStrength > 0.04) score += 20;
-      else score += 10;
+        // *** CORE RULE: sweepTrough's wick LOW must ALSO be below HH1's wick HIGH ***
+        if (sweepTrough.price >= hh1.price) continue;
 
-      // Retrace quality (deeper retrace = cleaner pattern)
-      if (retrace > 0.5) score += 25;
-      else if (retrace > 0.35) score += 15;
-      else score += 8;
+        // Amplitude check: the full range must be meaningful
+        const fullSwing = (hh3.price - sweepTrough.price) / sweepTrough.price;
+        if (fullSwing < cfg.minAmp) continue;
 
-      // Drop from peak2 (actively dropping)
-      if (dropFromPeak > 0.05) score += 25;
-      else if (dropFromPeak > 0.025) score += 15;
-      else score += 8;
+        // There should be a trough between HH1 and HH2 as well (normal retrace)
+        // (optional quality check — a true HH sequence has retraces between each peak)
+        const midTroughs = troughs.filter(t => t.idx > hh1.idx && t.idx < hh2.idx);
+        const midTrough = midTroughs.length
+          ? midTroughs.reduce((a, b) => b.price < a.price ? b : a)
+          : null;
 
-      // Currently falling confirmed
-      if (recentFalling) score += 15;
+        // ── Score the pattern ──
+        let score = 0;
 
-      // Pattern recency: prefer recent patterns
-      const recency = peak2.idx / n;
-      score += Math.round(recency * 5);
+        // How deep does the sweep trough go below both HH1 and HH2?
+        const sweepDepthBelowHH1 = (hh1.price - sweepTrough.price) / hh1.price;
+        const sweepDepthBelowHH2 = (hh2.price - sweepTrough.price) / hh2.price;
 
-      // Peak separation (not too close, not too far)
-      const separation = peak2.idx - peak1.idx;
-      if (separation > 20 && separation < 200) score += 5;
+        // Deeper sweep = more conviction
+        if (sweepDepthBelowHH2 > 0.08) score += 25;
+        else if (sweepDepthBelowHH2 > 0.04) score += 16;
+        else score += 8;
 
-      if (score > bestScore) {
-        bestScore = score;
-        bestMatch = {
-          peak1, peak2, midTrough,
-          retrace, hhStrength, dropFromPeak,
-          recentFalling, score,
-          afterCandles: afterPeak2.length,
-          currentClose,
-        };
+        if (sweepDepthBelowHH1 > 0.10) score += 15;
+        else if (sweepDepthBelowHH1 > 0.05) score += 10;
+        else score += 5;
+
+        // HH progression quality
+        const hhStep1 = (hh2.price - hh1.price) / hh1.price;
+        const hhStep2 = (hh3.price - hh2.price) / hh2.price;
+        if (hhStep1 > 0.05) score += 12; else if (hhStep1 > 0.02) score += 7; else score += 3;
+        if (hhStep2 > 0.05) score += 12; else if (hhStep2 > 0.02) score += 7; else score += 3;
+
+        // Drop from HH3
+        if (dropFromHH3 > 0.04) score += 20;
+        else if (dropFromHH3 > 0.02) score += 12;
+        else score += 6;
+
+        // Currently falling
+        if (recentFalling) score += 12;
+
+        // Mid-trough between HH1→HH2 present (cleaner structure)
+        if (midTrough) score += 5;
+
+        // Recency bonus
+        score += Math.round((hh3.idx / n) * 4);
+
+        if (score > bestScore) {
+          bestScore = score;
+          best = {
+            hh1, hh2, hh3,
+            sweepTrough, midTrough,
+            sweepDepthBelowHH1, sweepDepthBelowHH2,
+            dropFromHH3, recentFalling,
+            hhStep1, hhStep2,
+            fullSwing, score,
+            currentClose,
+            candles,
+          };
+        }
+
+        break; // use most recent valid HH1 for this HH2
       }
 
-      // Only need the most recent valid HH1 for this HH2
-      break;
+      if (best) break; // use most recent HH2 for this HH3
     }
 
-    if (bestMatch) break; // found most recent pattern, stop
+    if (best) break; // use most recent HH3
   }
 
-  if (!bestMatch) return null;
+  if (!best) return null;
 
-  // ── STEP 7: Compute confidence % ──
-  // Max theoretical score ~100
-  const confidence = Math.min(99, Math.round(bestMatch.score));
-
+  const confidence = Math.min(99, Math.round(best.score));
   return {
-    ...bestMatch,
+    ...best,
     confidence,
-    signal: confidence >= 65 ? 'strong' : 'mod',
-    candles,
+    signal: confidence >= 60 ? 'strong' : 'mod',
   };
 }
 
@@ -571,68 +587,85 @@ function drawMiniChart(canvas, candles, match) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
 
-  const n = candles.length;
-  // Show last 120 candles for visibility
+  const n    = candles.length;
   const view = candles.slice(Math.max(0, n - 120));
-  const vn = view.length;
+  const vn   = view.length;
+  const offset = Math.max(0, n - 120);
 
   const mn = Math.min(...view.map(c => c.l));
   const mx = Math.max(...view.map(c => c.h));
-  const pad = (mx - mn) * 0.1;
+  const pad = (mx - mn) * 0.12;
   const lo = mn - pad, hi = mx + pad;
 
   const xOf = i => (i / (vn - 1)) * W;
   const yOf = p => H - ((p - lo) / (hi - lo)) * H;
 
-  // Draw close line
+  // Base line fill
   const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, 'rgba(107,92,231,0.3)');
+  grad.addColorStop(0, 'rgba(107,92,231,0.25)');
   grad.addColorStop(1, 'rgba(107,92,231,0)');
 
   ctx.beginPath();
-  view.forEach((c, i) => { i === 0 ? ctx.moveTo(xOf(i), yOf(c.c)) : ctx.lineTo(xOf(i), yOf(c.c)); });
+  view.forEach((c, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(c.c)) : ctx.lineTo(xOf(i), yOf(c.c)));
   ctx.strokeStyle = '#6b5ce7';
   ctx.lineWidth = 1.5 * window.devicePixelRatio;
   ctx.stroke();
-
-  // Fill under line
   ctx.lineTo(xOf(vn-1), H); ctx.lineTo(0, H); ctx.closePath();
   ctx.fillStyle = grad; ctx.fill();
 
-  // Overlay: draw drop portion in red
-  const offset = Math.max(0, n - 120);
-  const p2ViewIdx = match.peak2.idx - offset;
-  if (p2ViewIdx >= 0 && p2ViewIdx < vn) {
+  // HH3 → now: draw in red (the current drop)
+  const hh3vi = match.hh3.idx - offset;
+  if (hh3vi >= 0 && hh3vi < vn) {
     ctx.beginPath();
-    for (let i = p2ViewIdx; i < vn; i++) {
-      i === p2ViewIdx ? ctx.moveTo(xOf(i), yOf(view[i].c)) : ctx.lineTo(xOf(i), yOf(view[i].c));
+    for (let i = hh3vi; i < vn; i++) {
+      i === hh3vi ? ctx.moveTo(xOf(i), yOf(view[i].c)) : ctx.lineTo(xOf(i), yOf(view[i].c));
     }
     ctx.strokeStyle = '#ff4466';
     ctx.lineWidth = 2 * window.devicePixelRatio;
     ctx.stroke();
-
-    // Peak2 dot
-    ctx.beginPath();
-    ctx.arc(xOf(p2ViewIdx), yOf(match.peak2.price), 3 * window.devicePixelRatio, 0, Math.PI * 2);
-    ctx.fillStyle = '#8b7cf8'; ctx.fill();
   }
 
-  // Peak1 dot
-  const p1ViewIdx = match.peak1.idx - offset;
-  if (p1ViewIdx >= 0 && p1ViewIdx < vn) {
+  // sweepTrough: draw a horizontal dashed line at sweep level
+  const stvi = match.sweepTrough.idx - offset;
+  const sweepY = yOf(match.sweepTrough.price);
+  if (stvi >= 0 && stvi < vn) {
     ctx.beginPath();
-    ctx.arc(xOf(p1ViewIdx), yOf(match.peak1.price), 3 * window.devicePixelRatio, 0, Math.PI * 2);
-    ctx.fillStyle = '#6b5ce7'; ctx.fill();
+    ctx.setLineDash([3 * window.devicePixelRatio, 3 * window.devicePixelRatio]);
+    // Line spans from HH2 idx to HH3 idx in view
+    const hh2vi = match.hh2.idx - offset;
+    const x1 = Math.max(0, hh2vi >= 0 ? xOf(hh2vi) : 0);
+    const x2 = hh3vi >= 0 ? xOf(hh3vi) : W;
+    ctx.moveTo(x1, sweepY);
+    ctx.lineTo(x2, sweepY);
+    ctx.strokeStyle = 'rgba(255,68,102,0.4)';
+    ctx.lineWidth = 1 * window.devicePixelRatio;
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Trough dot
+    ctx.beginPath();
+    ctx.arc(xOf(stvi), sweepY, 3 * window.devicePixelRatio, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff4466'; ctx.fill();
   }
+
+  // Peak dots
+  const drawDot = (vi, price, color) => {
+    if (vi < 0 || vi >= vn) return;
+    ctx.beginPath();
+    ctx.arc(xOf(vi), yOf(price), 3 * window.devicePixelRatio, 0, Math.PI * 2);
+    ctx.fillStyle = color; ctx.fill();
+  };
+  drawDot(match.hh1.idx - offset, match.hh1.price, '#3d4560');
+  drawDot(match.hh2.idx - offset, match.hh2.price, '#6b5ce7');
+  drawDot(match.hh3.idx - offset, match.hh3.price, '#8b7cf8');
 }
 
 // ── FORMAT ──
 function fmtPct(n) { return (n * 100).toFixed(2) + '%'; }
-function fmtP(p, ref) {
+function fmtP(p) {
   if (p < 0.0001) return p.toFixed(8);
-  if (p < 0.01) return p.toFixed(5);
-  if (p < 1) return p.toFixed(4);
-  if (p < 100) return p.toFixed(2);
+  if (p < 0.01)   return p.toFixed(5);
+  if (p < 1)      return p.toFixed(4);
+  if (p < 100)    return p.toFixed(2);
   return p.toFixed(1);
 }
 
@@ -643,7 +676,7 @@ function renderResults() {
     out.innerHTML = `<div class="list"><div class="empty">
       <div class="empty-ico">📊</div>
       <div class="empty-t">No pattern found</div>
-      <div class="empty-s">Try a looser sensitivity or different timeframe.<br>The pattern may not be forming right now.</div>
+      <div class="empty-s">The sweep pattern (retrace below both prior HH wicks)<br>isn't forming right now. Try a different timeframe or sensitivity.</div>
     </div></div>`;
     return;
   }
@@ -651,19 +684,15 @@ function renderResults() {
   const strong = results.filter(r => r.signal === 'strong');
   const mod    = results.filter(r => r.signal === 'mod');
   let html = '';
-
-  if (strong.length) {
-    html += `<div class="sec-lbl">🔥 Strong Match (${strong.length})</div><div class="list" id="strongList"></div>`;
-  }
-  if (mod.length) {
-    html += `<div class="sec-lbl">⚡ Moderate Match (${mod.length})</div><div class="list" id="modList"></div>`;
-  }
+  if (strong.length) html += `<div class="sec-lbl">🔥 Strong Match (${strong.length})</div><div class="list" id="strongList"></div>`;
+  if (mod.length)    html += `<div class="sec-lbl">⚡ Moderate Match (${mod.length})</div><div class="list" id="modList"></div>`;
   out.innerHTML = html;
 
   const buildCard = (r, idx) => {
+    const m = r.match;
     const chgCls = r.chg >= 0 ? 'up' : 'dn';
     const chgStr = (r.chg >= 0 ? '+' : '') + r.chg.toFixed(2) + '%';
-    const dropCls = r.match.dropFromPeak > 0.03 ? 'r' : 'y';
+    const dropCls = m.dropFromHH3 > 0.03 ? 'r' : 'y';
 
     const el = document.createElement('div');
     el.className = 'card ' + r.signal;
@@ -678,31 +707,36 @@ function renderResults() {
           <div class="csym">${r.sym}<span class="crank">#${idx+1}</span></div>
           <div class="cmeta"><span class="${chgCls}">${chgStr}</span> · $${fmtP(r.price)}</div>
         </div>
-        <div class="conf-badge ${r.signal === 'strong' ? 's' : 'm'}">${r.match.confidence}% match</div>
+        <div class="conf-badge ${r.signal === 'strong' ? 's' : 'm'}">${m.confidence}% match</div>
       </div>
       <div class="mini-chart"><canvas id="chart-${r.sym}"></canvas></div>
       <div class="pmets">
         <div class="pmet">
-          <div class="pmet-l">HH Strength</div>
-          <div class="pmet-v v">+${fmtPct(r.match.hhStrength)}</div>
+          <div class="pmet-l">Sweep↓HH1</div>
+          <div class="pmet-v r">-${fmtPct(m.sweepDepthBelowHH1)}</div>
         </div>
         <div class="pmet">
-          <div class="pmet-l">Retrace</div>
-          <div class="pmet-v g">${fmtPct(r.match.retrace)}</div>
+          <div class="pmet-l">Sweep↓HH2</div>
+          <div class="pmet-v r">-${fmtPct(m.sweepDepthBelowHH2)}</div>
         </div>
         <div class="pmet">
           <div class="pmet-l">Drop Now</div>
-          <div class="pmet-v ${dropCls}">-${fmtPct(r.match.dropFromPeak)}</div>
+          <div class="pmet-v ${dropCls}">-${fmtPct(m.dropFromHH3)}</div>
         </div>
         <div class="pmet">
           <div class="pmet-l">Falling</div>
-          <div class="pmet-v ${r.match.recentFalling ? 'r' : 'g'}">${r.match.recentFalling ? '↓ YES' : '↗ No'}</div>
+          <div class="pmet-v ${m.recentFalling ? 'r' : 'g'}">${m.recentFalling ? '↓ YES' : '↗ No'}</div>
         </div>
+      </div>
+      <div class="sweep-row">
+        <div class="sweep-tag">✓ Below HH1 wick</div>
+        <div class="sweep-tag">✓ Below HH2 wick</div>
+        <div class="sweep-note">Retrace swept liquidity of both prior peaks</div>
       </div>
       <div class="conf-row">
         <div class="conf-label">Confidence</div>
-        <div class="conf-track"><div class="conf-fill" style="width:${r.match.confidence}%"></div></div>
-        <div class="conf-pct">${r.match.confidence}%</div>
+        <div class="conf-track"><div class="conf-fill" style="width:${m.confidence}%"></div></div>
+        <div class="conf-pct">${m.confidence}%</div>
       </div>
       <button class="obtn" onclick="event.stopPropagation();openChart('${r.sym}')">
         📈 Open ${r.sym}/USDT on Binance
@@ -711,24 +745,21 @@ function renderResults() {
     return el;
   };
 
-  strong.forEach((r,i) => {
-    const el = buildCard(r, i);
-    document.getElementById('strongList')?.appendChild(el);
-    // Draw chart after DOM insert
-    requestAnimationFrame(() => {
-      const canvas = document.getElementById('chart-' + r.sym);
-      if (canvas) drawMiniChart(canvas, r.match.candles, r.match);
+  const drawAll = (list, listId, offset) => {
+    const container = document.getElementById(listId);
+    if (!container) return;
+    list.forEach((r, i) => {
+      const el = buildCard(r, i + offset);
+      container.appendChild(el);
+      requestAnimationFrame(() => {
+        const canvas = document.getElementById('chart-' + r.sym);
+        if (canvas) drawMiniChart(canvas, r.match.candles, r.match);
+      });
     });
-  });
+  };
 
-  mod.forEach((r,i) => {
-    const el = buildCard(r, i + strong.length);
-    document.getElementById('modList')?.appendChild(el);
-    requestAnimationFrame(() => {
-      const canvas = document.getElementById('chart-' + r.sym);
-      if (canvas) drawMiniChart(canvas, r.match.candles, r.match);
-    });
-  });
+  drawAll(strong, 'strongList', 0);
+  drawAll(mod, 'modList', strong.length);
 }
 
 // ── MAIN SCAN ──
@@ -744,12 +775,10 @@ async function runScan() {
   setProgress(0, 'Loading top coins from Binance...');
 
   try {
-    // Step 1: Get live top coins
     const coins = await fetchBinanceTop100();
     const total = coins.length;
     setProgress(5, `Scanning ${total} coins on ${activeTF}...`);
 
-    // Step 2: Fetch klines and detect pattern in batches
     const batchSize = 6;
     let done = 0;
 
@@ -758,7 +787,7 @@ async function runScan() {
       await Promise.allSettled(batch.map(async coin => {
         try {
           const candles = await fetchKlines(coin.sym, activeTF, 500);
-          if (candles.length < 50) return;
+          if (candles.length < 60) return;
 
           const match = detectPattern(candles, activeSens);
           if (match) {
@@ -770,17 +799,15 @@ async function runScan() {
               signal: match.signal,
             });
           }
-        } catch(e) { /* skip failed symbols */ }
+        } catch(e) { /* skip */ }
         done++;
       }));
 
       const pct = 5 + (done / total) * 90;
       setProgress(pct, `Analyzed ${done}/${total} · ${results.length} matches so far...`);
-      // small yield to keep UI responsive
       await new Promise(r => setTimeout(r, 20));
     }
 
-    // Sort by confidence
     results.sort((a,b) => b.match.confidence - a.match.confidence);
 
     setProgress(100, 'Done!');
@@ -806,7 +833,6 @@ function openChart(sym) {
   window.open(`https://www.binance.com/en/trade/${sym}_USDT?type=spot`, '_blank');
 }
 
-// Auto-run
 window.addEventListener('DOMContentLoaded', () => setTimeout(runScan, 400));
 </script>
 </body>
